@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "homepage": ".",
   "private": true,
-  "proxy": "http://localhost:5000/",
+  "proxy": "http://127.0.0.1:5000/",
   "dependencies": {
     "@material-ui/core": "^4.9.13",
     "@material-ui/icons": "^4.9.1",
@@ -30,11 +30,11 @@
   },
   "scripts": {
     "dev": "concurrently \"npm run server\" \"npm run start\"",
-    "server": "cd gocompass && flask run --no-debugger",
+    "server": "run-script-os",
     "server:win32": "cd gocompass && venv\\Scripts\\flask run --no-debugger",
     "server:default": "cd gocompass && venv/bin/flask run --no-debugger",
-    "start": "react-scripts start -FAST_REFRESH=true",
-    "build": "react-scripts build",
+    "start": "cross-env NODE_OPTIONS=--openssl-legacy-provider react-scripts start -FAST_REFRESH=true",
+    "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -54,6 +54,7 @@
     ]
   },
   "devDependencies": {
-    "concurrently": "^5.2.0"
+    "concurrently": "^5.2.0",
+    "cross-env": "^10.1.0"
   }
 }
