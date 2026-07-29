@@ -25,6 +25,7 @@ const App = observer((props) => {
             },
             menuButton: {
                 marginRight: theme.spacing(2),
+                minWidth: 160 // prevent buttons from "shrinking" when the user selects options with short name
             },
             title: {
                 flexGrow: 1,
@@ -71,11 +72,11 @@ const App = observer((props) => {
     });
     return (
         // New div so Typography and Buttons can inherit styles from it
+        // Trrack'd Title Bar Start
         <div className={classes.root}>
             <React.Fragment>
                 <AppBar ref={appBar} position="sticky" style={{backgroundColor: "#a51e37"}}>
                     <Toolbar>
-                        // Trrack'd Title Bar Start
                         <div className={classes.title} style={ {display: "flex", alignItems: "center"} }>
                             <Typography variant="h6">
                                 GO-Compass
@@ -87,8 +88,9 @@ const App = observer((props) => {
                                 Export
                             </Button>
                             <Button disabled={!props.rootStore.provenance} startIcon={<PublishIcon style={{color: "white"}}/>}
+                            // needed as "label" so the button can trigger the file picker
                                 style={{color: "white"}}
-                                component="label"> // needed as "label" so the button can trigger the file picker
+                                component="label"> 
                                 Import
                                 <input type="file"
                                     style={{display: "none"}}
@@ -103,8 +105,8 @@ const App = observer((props) => {
                                     }}/>
                             </Button>
                         </div>
-                        // Trrack'd Title Bar End
                         {props.rootStore.initialized ?
+                        // Trrack'd Title Bar End
                         // Trrack Provenance-related Actions Start
                             // Disable Undo button when provenance is not available or when we're already sitting at the root node [strict equality might not be necessary]
                             [<IconButton key={"undo"} disabled={!props.rootStore.provenance || props.rootStore.provenance.current.id === props.rootStore.provenance.root.id}
