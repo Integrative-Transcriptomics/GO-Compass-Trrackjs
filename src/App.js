@@ -25,7 +25,7 @@ const App = observer((props) => {
             },
             menuButton: {
                 marginRight: theme.spacing(2),
-                minWidth: 160 // prevent buttons from "shrinking" when the user selects options with short name
+                minWidth: 170 // prevent buttons from "shrinking" when the user selects options with short name
             },
             title: {
                 flexGrow: 1,
