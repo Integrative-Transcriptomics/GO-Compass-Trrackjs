@@ -10,6 +10,13 @@ import {observer, Provider} from "mobx-react";
 import IconButton from "@material-ui/core/IconButton";
 import GitHubIcon from "@material-ui/icons/GitHub";
 
+// Additional Material UI icons
+import Button from "@material-ui/core/Button";
+import UndoIcon from "@material-ui/icons/Undo";
+import RedoIcon from "@material-ui/icons/Redo";
+import GetAppIcon from "@material-ui/icons/GetApp";
+import PublishIcon from "@material-ui/icons/Publish";
+
 const App = observer((props) => {
     const useStyles = makeStyles((theme: Theme) =>
         createStyles({
@@ -63,15 +70,53 @@ const App = observer((props) => {
         }
     });
     return (
+        // New div so Typography and Buttons can inherit styles from it
         <div className={classes.root}>
             <React.Fragment>
                 <AppBar ref={appBar} position="sticky" style={{backgroundColor: "#a51e37"}}>
                     <Toolbar>
-                        <Typography className={classes.title} variant="h6">
-                            GO-Compass
-                        </Typography>
+                        // Trrack'd Title Bar Start
+                        <div className={classes.title} style={ {display: "flex", alignItems: "center"} }>
+                            <Typography variant="h6">
+                                GO-Compass
+                            </Typography>
+
+                            <Button disabled={!props.rootStore.provenance} startIcon={<GetAppIcon style={{color: "white"}}/>}
+                                style={{color: "white"}}
+                                onClick={() => props.rootStore.exportProvenance()}>
+                                Export
+                            </Button>
+                            <Button disabled={!props.rootStore.provenance} startIcon={<PublishIcon style={{color: "white"}}/>}
+                                style={{color: "white"}}
+                                component="label"> // needed as "label" so the button can trigger the file picker
+                                Import
+                                <input type="file"
+                                    style={{display: "none"}}
+                                    onChange={(event) => {
+                                        // change event fires when its value changes
+                                        const inputFile = event.target.files[0];
+                                        const inputFileReader = new FileReader();
+                                        inputFileReader.onload = () => props.rootStore.importProvenance(inputFileReader.result);
+                                        inputFileReader.readAsText(inputFile);
+                                        // reset the input back to "unset" state so the next time the user picks a file, the browser registers it as a new change
+                                        event.target.value = null; 
+                                    }}/>
+                            </Button>
+                        </div>
+                        // Trrack'd Title Bar End
                         {props.rootStore.initialized ?
-                            [<FormControl className={classes.menuButton} key={"ont"}>
+                        // Trrack Provenance-related Actions Start
+                            // Disable Undo button when provenance is not available or when we're already sitting at the root node [strict equality might not be necessary]
+                            [<IconButton key={"undo"} disabled={!props.rootStore.provenance || props.rootStore.provenance.current.id === props.rootStore.provenance.root.id}
+                                         onClick={() => props.rootStore.provenance.undo()}>
+                                <UndoIcon style={{color: "white"}}/>
+                            </IconButton>,
+                            // Disable Redo button when provenance is not available or when the graph has no children [strict equality is actually necessary]
+                            <IconButton key={"redo"} disabled={!props.rootStore.provenance || props.rootStore.provenance.current.children.length === 0}
+                                        onClick={() => props.rootStore.provenance.redo()}>
+                                <RedoIcon style={{color: "white"}}/>
+                            </IconButton>,
+                            <FormControl className={classes.menuButton} key={"ont"}>
                                 <InputLabel style={{color: "white"}}
                                 >Ontology</InputLabel>
                                 <Select
