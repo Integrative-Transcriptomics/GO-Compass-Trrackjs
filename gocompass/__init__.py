@@ -461,14 +461,15 @@ def process_backgrounds(background_files, propagate_background, is_local):
             for id in background:
                 background_semi_separated[id] = ";".join(background[id])
             background_df = pd.DataFrame.from_dict(background_semi_separated, orient="index")
-            background_file = tempfile.NamedTemporaryFile()
+            background_file = tempfile.NamedTemporaryFile(delete=False) # Windows compatibility fix 1
+            background_file.close() # close the temp file handle immediately after creating it before to_csv opens this path
             background_df.to_csv(background_file.name, sep="\t")
             if is_local:
                 background_anno[os.path.basename(file.name)] = get_objanno(background_file.name, 'id2gos', godag=godag)
             else:
                 background_anno[os.path.basename(file.filename)] = get_objanno(background_file.name, 'id2gos',
                                                                                godag=godag)
-            background_file.close()
+            os.unlink(background_file.name) # manually delete temp file when it's not needed anymore
     return background_anno
 
 
