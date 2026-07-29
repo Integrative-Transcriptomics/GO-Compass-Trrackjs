@@ -1,6 +1,8 @@
 import {DataStore} from "./DataStore";
 import {action, extendObservable} from "mobx";
 
+// New Import: TRRACK FUNCTIONALITY
+import {createGoCompassProvenance, setOntologyAction, setSigThresholdAction} from "./ProvenanceStore"; 
 export class RootStore {
     constructor() {
         this.ontologies_map = {BP: "Biological process", MF: "Molecular function", CC: "Cellular component"};
@@ -22,6 +24,7 @@ export class RootStore {
             get logSigThreshold() {
                 return -Math.log10(this.sigThreshold);
             },
+            // init starts dormant
             init: action((results, conditions, tableColumns, hasFC, geneValues, goSetSize, selectedMeasure, pvalueFilter) => {
                 this.initialized=true
                 this.selectedMeasure = selectedMeasure;
@@ -42,12 +45,39 @@ export class RootStore {
                 });
                 this.sigThreshold = Number(pvalueFilter) <= 0.05 ? Number(pvalueFilter) : 0.05
 
+                // Create Provenance and observe it globally
+                this.provenance = createGoCompassProvenance(this.ontology, this.sigThreshold); 
+                // Replay into RootStore only on undo/redo/ [goToNode later if we start doing graph stuff}
+                // Note: Don't use it on apply()
+                this.provenance.addGlobalObserver(action((graph, change) => {
+                    // This flag tells Trrack that the app state has changed (keeps it in sync with MobX)
+                    if (change === "CurrentChanged") { 
+                        const state = this.provenance.state;
+                        this.ontology = state.ontology;
+                        this.sigThreshold = state.sigThreshold;
+                    }
+                }));
+
             }),
-            setOntology: action((ontology) => {
+            // Trracking functionality for ontology and threshold methods + importProvenance function
+           setOntology: action((ontology) => {
                 this.ontology = ontology;
+                if (this.provenance) { 
+                    this.provenance.apply(setOntologyAction(ontology), `Set ontology to ${ontology}`);
+                }
             }),
             setSigThreshold: action((threshold) => {
                 this.sigThreshold = threshold;
+                if (this.provenance) {
+                    this.provenance.apply(setSigThresholdAction(threshold), `Set significance threshold to ${threshold}`);
+                }
+            }),
+            // Import provenance data previously created by exportProvenance()
+            importProvenance: action((json) => {
+                this.provenance.importProvenanceGraph(json);
+                const state = this.provenance.state;
+                this.ontology = state.ontology;
+                this.sigThreshold = state.sigThreshold;
             }),
         });
     }
