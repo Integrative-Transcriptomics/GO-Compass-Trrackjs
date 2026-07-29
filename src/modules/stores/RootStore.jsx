@@ -81,4 +81,22 @@ export class RootStore {
             }),
         });
     }
+
+    // TRRACK FUNCTIONALITY: Export provenance data to a JSON file
+    exportProvenance() {
+        if (!this.provenance) {
+            console.error("Provenance graph is not initialized.");
+            return;
+        }
+        const json = this.provenance.exportProvenanceGraph();
+        let blob = new Blob([json], {type: 'application/json;charset=utf-8;'})
+        let url = URL.createObjectURL(blob);
+        let link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", "go-compass-provenance.json");
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
 }
