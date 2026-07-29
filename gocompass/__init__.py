@@ -321,13 +321,14 @@ def read_background(background_file, is_local):
     reads background file
     """
     # helper file needs to be created since GOAtools method is only able to read files
-    helper_file = tempfile.NamedTemporaryFile()
+    helper_file = tempfile.NamedTemporaryFile(delete=False) # Windows compatibility fix 1
     if not is_local:
         helper_file.write(background_file.stream.read())
     else:
         helper_file.write(background_file.read())
-    objanno = get_objanno(helper_file.name, 'id2gos', godag=godag)
     helper_file.close()
+    objanno = get_objanno(helper_file.name, 'id2gos', godag=godag)
+    os.unlink(helper_file.name) # Windows compatibility fix 2
     return objanno
 
 
