@@ -56,6 +56,41 @@ const App = observer((props) => {
         }
     }, [appBar, props.rootStore.dataStores, props.rootStore.initialized, props.rootStore.ontology]);
 
+    // Keyboard shortcut functionality ("hotkeys") 
+    // CTRL+Z (STRG+Z) to undo a provenance-enabled action 
+    // CTRL+Y (STRG+Y) to redo a provenance-enabled action
+    useEffect(() => {
+        const handleKeyDown = (event) => {
+
+            // No provenance? No undo/redo hotkeys!
+            if (!props.rootStore.provenance) {
+                return;
+            }
+
+            // Hotkey assignment
+            const isUndo = event.ctrlKey && !event.shiftKey && event.key.toLowerCase() === "z";
+            const isRedo = event.ctrlKey && (event.key.toLowerCase() === "y" || (event.shiftKey && event.key.toLowerCase() === "z"));
+
+            // Execute undo/redo logic depending on what button has been triggered
+            if (isUndo) {
+                event.preventDefault();
+                if (props.rootStore.provenance.current.id !== props.rootStore.provenance.root.id) {
+                    props.rootStore.provenance.undo();
+                }
+            } else if (isRedo) {
+                event.preventDefault();
+                if (props.rootStore.provenance.current.children.length !== 0) {
+                    props.rootStore.provenance.redo();
+                }
+            }
+        };
+
+        // Global keydown listener for the entire GO-Compass window
+        window.addEventListener("keydown", handleKeyDown);
+        // Remove old listener before attaching new one when the effect is re-run
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [props.rootStore]);
+
     const classes = useStyles();
     let views = [];
     // create one view for each ontology
