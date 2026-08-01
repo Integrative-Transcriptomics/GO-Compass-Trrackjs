@@ -83,6 +83,61 @@ export class UpSetStore {
                     })
                     return (combinations.filter((d, i) => !filterIndices.includes(i)))
                 },
+                /**
+                 * Returns ISet or ISetCombination TypeScript object for the currently locked GO-Term or null if nothing is locked
+                 * Check if this actually conforms to JSDOC annotation standards
+                 * @returns {ISet|ISetCombination|null}
+                 */
+                get lockedSelection() {
+                    // If the user hasn't locked a GO-TERM aka there is no selection, we have nothing to highlight
+                    if (!this.visStore.selectionLocked) {
+                        return null;
+                    }
+                    // selectionLocked shouldn't ever be true with an empty selection, but maybe there's a case I'm overlooking so we'll catch it just in case
+                    if (this.visStore.selectedConditions.length === 0) {
+                        return null;
+                    }
+
+                    // visStore only tracks condition INDICES. We translate them to condition names so they can be compared against upSetSets/upSetCombinations below
+                    // [sorted so the order the conditions were locked in doesn't actually affect the comparison]
+                    const lockedConditionNames = [];
+                    this.visStore.selectedConditions.forEach(conditionIndex => {
+                        lockedConditionNames.push(this.dataStore.conditions[conditionIndex]);
+                    });
+
+                    lockedConditionNames.sort();
+
+                    // A single locked condition maps to a plain set
+                    // Multiple locked conditions together map to a "combination" aka an intersection of sets
+                    // We want to search only the matching array, since sets and combinations do not share a stable id we could look up by instead
+                    if (lockedConditionNames.length === 1) {
+                        for (const set of this.upSetSets) {
+                            if (set.name === lockedConditionNames[0]) { 
+                                return set; 
+                            }
+                        }
+                        return null; // if no matching set is found (shouldn't normally happen, but who knows?)
+                    }
+
+                    // Find the correct combination whose set of conditions matches the locked selection
+                    for (const combination of this.upSetCombinations) {
+                        // collect this combination's own condition names, sorted the same way as lockedConditionNames so the two lists line up for a position-by-position compare
+                        const combinationConditionNames = [];
+                        combination.sets.forEach(set => {
+                            combinationConditionNames.push(set.name);
+                        });
+                        combinationConditionNames.sort();
+
+                        // Check whether the two arrays contain exactly the same set of names ["is this partciular UpSet combination the exact same group of conditions the user has locked?"]
+                        const namesMatch = lockedConditionNames.length === combinationConditionNames.length
+                            && lockedConditionNames.every((name, index) => name === combinationConditionNames[index]);
+
+                        if (namesMatch) {
+                            return combination;
+                        }
+                    }
+                    return null; // if no matching combination is found. Shouldn't normally happen, but again: who knows?
+                }
             }
         )
 
