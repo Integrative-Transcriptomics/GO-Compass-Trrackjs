@@ -1,4 +1,4 @@
-import React, {createRef, useCallback, useEffect, useState} from 'react';
+import React, {createRef, useCallback, useEffect, useState, useRef } from 'react';
 import PropTypes from "prop-types";
 import * as d3 from "d3";
 import {inject, observer} from "mobx-react";
@@ -11,6 +11,16 @@ const DraggableTriangle = inject("visStore")(observer((props) => {
     const xScale = props.xScale;
     const ref = createRef();
 
+    // Relevant for tracking: Did user drag the triangle? [effect fires when a drag ends, aka when a drag gets committed]
+    const userWasDragging = useRef(false);
+
+    // TODO: Verifiy functionality
+    useEffect(() => {
+        if (userWasDragging.current && !dragging) {
+            props.onDragEnd();
+        }
+        userWasDragging.current = dragging;
+    }, [dragging, props]);
 
     const mouseDown = useCallback((event) => {
         event.preventDefault();
@@ -83,6 +93,9 @@ DraggableTriangle.propTypes = {
     text: PropTypes.string.isRequired,
     min: PropTypes.number.isRequired,
     max: PropTypes.number.isRequired,
+
+    // Required for tracking draggable triangle
+    onDragEnd: PropTypes.func.isRequired,
 };
 export default DraggableTriangle;
 

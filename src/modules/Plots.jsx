@@ -47,7 +47,8 @@ const Plots = inject("dataStore", "visStore")(observer((props) => {
     }, [props.visStore]);
     const tabRef = createRef();
     const classes = useStyles();
-    const [selectedTab, setSelectedTab] = useState(0);
+    // Local tab state will now be handled by Trrack
+    // const [selectedTab, setSelectedTab] = useState(0);
     const [tabHeight, setTabHeight] = useState(10);
     const treeID = "id" + uuidv4();
     const treeMapID = "id" + uuidv4();
@@ -120,14 +121,18 @@ const Plots = inject("dataStore", "visStore")(observer((props) => {
                                     Clear selection
                                 </Button> : null}
                         </ButtonGroup>
-                    <Tabs ref={tabRef} value={selectedTab} onChange={(e, v) => {
+                    <Tabs ref={tabRef} value={props.visStore.resultsTab} onChange={(e, v) => {
                         props.visStore.unlock();
-                        setSelectedTab(v)
+                        // Update tracked ResultsTab using v
+                        props.visStore.setResultsTab(v);
+
+                        // No longer needed when using props.visStore.setResultsTab(v)
+                        // setSelectedTab(v)
                     }}>
                         <Tab label="All GO-Terms"/>
                         <Tab label="Significant GO-Terms"/>
                     </Tabs>
-                    <TabPanel value={selectedTab} index={0}>
+                    <TabPanel value={props.visStore.resultsTab} index={0}>
                         {props.dataStore.correlationLoaded ?
                             <CorrelationHeatmap width={props.visStore.screenWidth / 2}
                                                 height={props.visStore.plotHeight / 2 - tabHeight}
@@ -135,7 +140,7 @@ const Plots = inject("dataStore", "visStore")(observer((props) => {
                             /> : null
                         }
                     </TabPanel>
-                    <TabPanel value={selectedTab} index={1}>
+                    <TabPanel value={props.visStore.resultsTab} index={1}>
                         <Provider upSetStore={props.dataStore.upSetStore}>
                             <UpSet width={props.visStore.screenWidth / 2}
                                    height={props.visStore.plotHeight / 2 - tabHeight}

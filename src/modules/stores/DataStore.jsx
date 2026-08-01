@@ -5,12 +5,18 @@ import {TableStore} from "./TableStore";
 import {VisStore} from "./VisStore";
 import {UpSetStore} from "./UpSetStore";
 
+// Import Trrack functionality from ProvenanceStore.jsx
+import { setFilterCutoffAction, setClusterCutoffAction } from "./ProvenanceStore";
+
 /**
  * Central store for data operations
  */
 export class DataStore {
-    constructor(dataTable, tree, conditions, tableColumns, rootStore) {
-        this.rootStore = rootStore
+    constructor(ontology, dataTable, tree, conditions, tableColumns, rootStore) {
+        // Provide each DataStore instance with a way to check which ontology it belongs to
+        this.ontology = ontology;
+
+        this.rootStore = rootStore;
         this.tableStore = new TableStore(dataTable, conditions, tableColumns);
         this.visStore = new VisStore(this);
         this.upSetStore = new UpSetStore(this, this.visStore)
@@ -167,11 +173,26 @@ export class DataStore {
             setClusterCutoff: action((cutoff) => {
                 this.clusterCutoff = cutoff;
             }),
+            // commits the current filter cutoff to our provenance (called once on drag end) [could also call on intermediate sliper steps if desired by chair]
+            commitFilterCutoff: action(() => {
+                if (this.rootStore.provenance) {
+                    this.rootStore.provenance.apply(
+                        setFilterCutoffAction({ontology: this.ontology, cutoff: this.filterCutoff}),
+                        `Set filter cutoff to ${this.filterCutoff} (${this.ontology})`);
+                }
+            }),
+            // commits the current cluster cutoff to our provenance (called once on drag end) [could also call on intermediate sliper steps if desired by chair]
+            commitClusterCutoff: action(() => {
+                if (this.rootStore.provenance) {
+                    this.rootStore.provenance.apply(
+                        setClusterCutoffAction({ontology: this.ontology, cutoff: this.clusterCutoff}),
+                        `Set cluster cutoff to ${this.clusterCutoff} (${this.ontology})`);
+                }
+            }),
             recalculateFiltering: action((cutoff) => {
                 this.filteredTree = this.filterTree(this.tree, cutoff);
                 this.filterHierarchy = this.extractHierarchy(this.tree, cutoff, false, false);
             })
-
         });
         // when the filter slider is moved, recalculate pca and correlation
         reaction(

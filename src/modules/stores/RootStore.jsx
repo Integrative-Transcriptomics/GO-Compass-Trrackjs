@@ -1,8 +1,10 @@
 import {DataStore} from "./DataStore";
 import {action, extendObservable} from "mobx";
 
-// New Import: TRRACK FUNCTIONALITY
-import {createGoCompassProvenance, setOntologyAction, setSigThresholdAction} from "./ProvenanceStore"; 
+// Import Trrack functionality from ProvenanceStore.jsx
+//import * as ProvenanceStore from "./ProvenanceStore"
+import {createGoCompassProvenance, setOntologyAction, setSigThresholdAction, setFilterCutoffAction, setClusterCutoffAction, setResultsTabAction} from "./ProvenanceStore";
+// do we need setFilterCutoffAction, setClusterCutoffAction, setResultsTabAction here?
 export class RootStore {
     constructor() {
         this.ontologies_map = {BP: "Biological process", MF: "Molecular function", CC: "Cellular component"};
@@ -35,7 +37,8 @@ export class RootStore {
                 this.goSetSize = goSetSize
                 Object.keys(results).forEach(ont => {
                     if (Object.keys(results[ont].tree).length !== 0) {
-                        this.dataStores[ont] = new DataStore(results[ont].data, results[ont].tree, conditions, tableColumns, this)
+                        // Needed for Trrack: pass ontology id (ont) over to DataStore:
+                        this.dataStores[ont] = new DataStore(ont, results[ont].data, results[ont].tree, conditions, tableColumns, this)
                     } else {
                         this.dataStores[ont] = null
                     }
@@ -44,48 +47,77 @@ export class RootStore {
                     return ({id: ont, name: this.ontologies_map[ont]})
                 });
                 this.sigThreshold = Number(pvalueFilter) <= 0.05 ? Number(pvalueFilter) : 0.05
-
+                // TRRACK COMPONENT FOR MobX extendObservable START
+                // Seed per-ontology maps ({ontologyId: value}) for filter/cluster cutoffs and results tab (maybe more to come)
+                const initialFilterCutoff = {}, initialClusterCutoff = {}, initialResultsTab = {};
+                Object.keys(this.dataStores).forEach(ont => {
+                    if (this.dataStores[ont]) {
+                        initialFilterCutoff[ont] = this.dataStores[ont].filterCutoff;
+                        initialClusterCutoff[ont] = this.dataStores[ont].clusterCutoff;
+                        initialResultsTab[ont] = this.dataStores[ont].visStore.resultsTab;
+                    }
+                });
                 // Create Provenance and observe it globally
-                this.provenance = createGoCompassProvenance(this.ontology, this.sigThreshold); 
+                this.provenance = createGoCompassProvenance(this.ontology, this.sigThreshold,
+                    initialFilterCutoff, initialClusterCutoff, initialResultsTab);
                 // Replay into RootStore only on undo/redo/ [goToNode later if we start doing graph stuff}
-                // Note: Don't use it on apply()
+                // NOTE: Don't use it on apply()
                 this.provenance.addGlobalObserver(action((graph, change) => {
                     // This flag tells Trrack that the app state has changed (keeps it in sync with MobX)
                     if (change === "CurrentChanged") { 
                         const state = this.provenance.state;
+                        // 
                         this.ontology = state.ontology;
                         this.sigThreshold = state.sigThreshold;
+                        // Restore per-ontology state directly (bypassing DataStore bzw. VisStore actions) so this doesn't re-trigger provenance.apply and loops back on itself
+                        Object.keys(state.filterCutoff).forEach(ont => {
+                            if (this.dataStores[ont]) {
+                                this.dataStores[ont].filterCutoff = state.filterCutoff[ont];
+                                this.dataStores[ont].clusterCutoff = state.clusterCutoff[ont];
+                                this.dataStores[ont].visStore.resultsTab = state.resultsTab[ont];
+                            }
+                        });
                     }
                 }));
 
             }),
-            // Trracking functionality for ontology and threshold methods + importProvenance function
+            // Tracking functionality for ontology selection context menu
            setOntology: action((ontology) => {
                 this.ontology = ontology;
                 if (this.provenance) { 
                     this.provenance.apply(setOntologyAction(ontology), `Set ontology to ${ontology}`);
                 }
             }),
+            // Tracking functionality for threshold selection context menu
             setSigThreshold: action((threshold) => {
                 this.sigThreshold = threshold;
                 if (this.provenance) {
                     this.provenance.apply(setSigThresholdAction(threshold), `Set significance threshold to ${threshold}`);
                 }
             }),
-            // Import provenance data previously created by exportProvenance()
+            // Import provenance data functionality for data previously created by exportProvenance()
             importProvenance: action((json) => {
                 this.provenance.importProvenanceGraph(json);
                 const state = this.provenance.state;
                 this.ontology = state.ontology;
                 this.sigThreshold = state.sigThreshold;
+                // Restore per-ontology state directly (bypassing DataStore bzw. VisStore actions) so this doesn't re-trigger provenance.apply and loops back on itself
+                Object.keys(state.filterCutoff).forEach(ont => {
+                    if (this.dataStores[ont]) {
+                        this.dataStores[ont].filterCutoff = state.filterCutoff[ont];
+                        this.dataStores[ont].clusterCutoff = state.clusterCutoff[ont];
+                        this.dataStores[ont].visStore.resultsTab = state.resultsTab[ont];
+                    }
+                });
             }),
         });
+        // TRRACK COMPONENT FOR MobX extendObservable END
     }
 
-    // TRRACK FUNCTIONALITY: Export provenance data to a JSON file
+    // Export provenance data to a JSON file so that it may later be imported using importProvenance()
     exportProvenance() {
         if (!this.provenance) {
-            console.error("Provenance graph is not initialized.");
+            console.error("Provenance graph is not yet initialized.");
             return;
         }
         const json = this.provenance.exportProvenanceGraph();

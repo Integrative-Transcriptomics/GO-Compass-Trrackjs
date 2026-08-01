@@ -3,6 +3,9 @@ import * as d3 from "d3";
 import {getTextWidth} from "../../UtilityFunctions";
 import traverseTree from "../ClusteredHeatmap/RFLayout";
 
+// Import Trrack functionality from ProvenanceStore.jsx
+import { setResultsTabAction } from "./ProvenanceStore";
+
 /**
  * store for visualization operations
  */
@@ -23,6 +26,7 @@ export class VisStore {
             selectionLocked: false,
             conditionIndex: 0,
             stepsize: 10,
+            resultsTab: 0, // initiate Trrack with tab 0 ["All GO-Terms" tab]
 
             /**
              * color Scale for terms
@@ -156,7 +160,16 @@ export class VisStore {
                     this.selectedConditions = [...new Set(indices)];
                 }
             }),
-
+            // Provenance-enabled ResultsTab display
+            setResultsTab: action((tab) => {
+                this.resultsTab = tab;
+                if (this.dataStore.rootStore.provenance) {
+                    this.dataStore.rootStore.provenance.apply(
+                        setResultsTabAction({ontology: this.dataStore.ontology, tab}),
+                        // if in tab 0, display All GO-Terms, otherwise display Significant GO-Terms
+                        `Set results tab to ${tab === 0 ? "All GO-Terms" : "Significant GO-Terms"} (${this.dataStore.ontology})`);
+                }
+            }),
         })
     }
 }
