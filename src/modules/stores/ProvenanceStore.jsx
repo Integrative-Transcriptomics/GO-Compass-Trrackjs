@@ -1,17 +1,22 @@
 import {initProvenance, createAction} from "@visdesignlab/trrack";
 
-// This file doesn't contain any syntax (yet) that would justify .jsx usage, but every other store uses .jsx and I don't want it to look out of place
+/* 
+    ProvenanceStore.jsx serves as our primary registry of provenance-enabled functions and constants. These can be imported by other files in order to implement the respective tracking functionality.
+    This file doesn't contain any syntax (yet) that would justify .jsx usage, but every other store uses .jsx and I don't want it to look out of place.
+*/
 
-// Provenance Builder: Creates initial provenance graph, seeds it with current values supplied by RootStore
-export function createGoCompassProvenance(initialOntology, initialSignificanceThreshold, initialFilterCutoff, initialClusterCutoff, initialResultsTab) {
+// Declares initial provenance graph building function so other files can import it, then seeds it with values supplied by RootStore
+export function createGoCompassProvenance(initialOntology, initialSignificanceThreshold, initialFilterCutoff, initialClusterCutoff, initialResultsTab, initialSelectionLocked, initialSelectedConditions) {
     const provenance = initProvenance({
         ontology: initialOntology,
         sigThreshold: initialSignificanceThreshold,
         filterCutoff: initialFilterCutoff,
         clusterCutoff: initialClusterCutoff,
         resultsTab: initialResultsTab,
+        selectionLocked: initialSelectionLocked,
+        selectedConditions: initialSelectedConditions,
     });
-    provenance.done(); // provenance needs to have been built before apply() can be used
+    provenance.done(); // provenance needs to have been built before apply() can be used [may want to check Trrack's ProvenanceCreator.ts to check the actual technical reason]
     return provenance;
 }
 
@@ -44,3 +49,11 @@ export const setClusterCutoffAction = createAction((state, {ontology, cutoff}) =
 export const setResultsTabAction = createAction((state, {ontology, tab}) => {
     state.resultsTab[ontology] = tab;
 }).setLabel("Set Results Tab");
+
+// Tracker for locking/unlocking a set-selection in the Significant GO-Terms tab
+// Hover-driven highlighting is intentionally NOT tracked here [this action simply happens way too often]
+// Only deliberate click-to-lock / clear-selection actions are tracked
+export const setLockedSelectionAction = createAction((state, {ontology, selectionLocked, selectedConditions}) => {
+    state.selectionLocked[ontology] = selectionLocked;
+    state.selectedConditions[ontology] = selectedConditions;
+}).setLabel("Set Locked Selection");

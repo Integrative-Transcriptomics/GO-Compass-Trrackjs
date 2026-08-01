@@ -49,17 +49,19 @@ export class RootStore {
                 this.sigThreshold = Number(pvalueFilter) <= 0.05 ? Number(pvalueFilter) : 0.05
                 // TRRACK COMPONENT FOR MobX extendObservable START
                 // Seed per-ontology maps ({ontologyId: value}) for filter/cluster cutoffs and results tab (maybe more to come)
-                const initialFilterCutoff = {}, initialClusterCutoff = {}, initialResultsTab = {};
+                const initialFilterCutoff = {}, initialClusterCutoff = {}, initialResultsTab = {}, initialSelectionLocked = {}, initialSelectedConditions = {};
                 Object.keys(this.dataStores).forEach(ont => {
                     if (this.dataStores[ont]) {
                         initialFilterCutoff[ont] = this.dataStores[ont].filterCutoff;
                         initialClusterCutoff[ont] = this.dataStores[ont].clusterCutoff;
                         initialResultsTab[ont] = this.dataStores[ont].visStore.resultsTab;
+
+                        initialSelectionLocked[ont] = this.dataStores[ont].visStore.selectionLocked;
+                        initialSelectedConditions[ont] = this.dataStores[ont].visStore.selectedConditions;
                     }
                 });
                 // Create Provenance and observe it globally
-                this.provenance = createGoCompassProvenance(this.ontology, this.sigThreshold,
-                    initialFilterCutoff, initialClusterCutoff, initialResultsTab);
+                this.provenance = createGoCompassProvenance(this.ontology, this.sigThreshold, initialFilterCutoff, initialClusterCutoff, initialResultsTab, initialSelectionLocked, initialSelectedConditions);
                 // Replay into RootStore only on undo/redo/ [goToNode later if we start doing graph stuff}
                 // NOTE: Don't use it on apply()
                 this.provenance.addGlobalObserver(action((graph, change) => {
@@ -75,11 +77,13 @@ export class RootStore {
                                 this.dataStores[ont].filterCutoff = state.filterCutoff[ont];
                                 this.dataStores[ont].clusterCutoff = state.clusterCutoff[ont];
                                 this.dataStores[ont].visStore.resultsTab = state.resultsTab[ont];
+
+                                this.dataStores[ont].visStore.selectionLocked = state.selectionLocked[ont];
+                                this.dataStores[ont].visStore.selectedConditions = state.selectedConditions[ont];
                             }
                         });
                     }
                 }));
-
             }),
             // Tracking functionality for ontology selection context menu
            setOntology: action((ontology) => {
@@ -107,6 +111,9 @@ export class RootStore {
                         this.dataStores[ont].filterCutoff = state.filterCutoff[ont];
                         this.dataStores[ont].clusterCutoff = state.clusterCutoff[ont];
                         this.dataStores[ont].visStore.resultsTab = state.resultsTab[ont];
+
+                        this.dataStores[ont].visStore.selectionLocked = state.selectionLocked[ont];
+                        this.dataStores[ont].visStore.selectedConditions = state.selectedConditions[ont];
                     }
                 });
             }),

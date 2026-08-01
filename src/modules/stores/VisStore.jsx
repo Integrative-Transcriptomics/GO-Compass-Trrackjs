@@ -4,7 +4,7 @@ import {getTextWidth} from "../../UtilityFunctions";
 import traverseTree from "../ClusteredHeatmap/RFLayout";
 
 // Import Trrack functionality from ProvenanceStore.jsx
-import { setResultsTabAction } from "./ProvenanceStore";
+import { setResultsTabAction, setLockedSelectionAction } from "./ProvenanceStore";
 
 /**
  * store for visualization operations
@@ -140,19 +140,38 @@ export class VisStore {
                 this.sigThreshold = threshold;
             }),
             unlock: action(() => {
+                // Only commit to provenance if there was actually something locked to clear 
+                // unlock() also fires on every tab switch even with nothing selected
+                const hadSelection = (this.selectionLocked || this.selectedConditions.length > 0);
+
                 this.selectionLocked = false;
-                this.selectedConditions=[];
+                this.selectedConditions = [];
+
+                if (hadSelection && this.dataStore.rootStore.provenance) {
+                    this.dataStore.rootStore.provenance.apply(
+                        setLockedSelectionAction({ontology: this.dataStore.ontology, selectionLocked: false, selectedConditions: []}), `Clear selection (${this.dataStore.ontology})`);
+                }
             }),
             setLockedSelection: action((indices) => {
                 const newIndices=[...new Set(indices)];
                 if(this.selectionLocked) {
                     if (newIndices.toString() === this.selectedConditions.toString()) {
                         this.selectionLocked=false
-                    } else{
+                    } else {
                         this.selectedConditions = newIndices
                     }
-                } else{
+                } else {
                     this.selectionLocked=true
+                }
+                // New case for provenance handling: If provenance data is present, apply setLockedSelectionAction to the provenance data as well
+                if (this.dataStore.rootStore.provenance) {
+                    this.dataStore.rootStore.provenance.apply(
+                        setLockedSelectionAction({
+                            ontology: this.dataStore.ontology,
+                            selectionLocked: this.selectionLocked,
+                            selectedConditions: this.selectedConditions
+                        }),
+                        `${this.selectionLocked ? "Lock" : "Unlock"} selection (${this.dataStore.ontology})`);
                 }
             }),
             selectConditions: action((indices) => {
@@ -160,9 +179,12 @@ export class VisStore {
                     this.selectedConditions = [...new Set(indices)];
                 }
             }),
-            // Provenance-enabled ResultsTab display
+            // Provenance-enabled ResultsTab display for when the user clicks the ALL GO-Terms / Significant GO-Terms tab in Plots.jsx
+            // TODO: Add better explanation
             setResultsTab: action((tab) => {
+                // Update MobX observed/observable resultsTab field in VisStore instance
                 this.resultsTab = tab;
+                // Only execute logic when provenance data is present
                 if (this.dataStore.rootStore.provenance) {
                     this.dataStore.rootStore.provenance.apply(
                         setResultsTabAction({ontology: this.dataStore.ontology, tab}),
