@@ -94,7 +94,7 @@ DraggableTriangle.propTypes = {
     min: PropTypes.number.isRequired,
     max: PropTypes.number.isRequired,
 
-    // Required for tracking draggable triangle
+    // Required to provide ClusteredHeatmap.jsx with onDragEnd() function
     onDragEnd: PropTypes.func.isRequired,
 };
 export default DraggableTriangle;

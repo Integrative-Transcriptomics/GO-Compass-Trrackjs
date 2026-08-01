@@ -20,6 +20,11 @@ export function createGoCompassProvenance(initialOntology, initialSignificanceTh
     return provenance;
 }
 
+// PROVENANCE ACTIONS
+// Syntax is always: createAction( (<state>, <payload>) => { ... } )
+// <state> is the first parameter and literally always Trrack's tracked state
+// <payload> can be a single plain value or a tuple/triplet/... of dependent values, like {ontology, cutoff} or {ontology, selectionLocked, selectedConditions}
+
 // PSEUDO-ROOTS
 // Tracker for ontology selector context menu
 // .setLabel("<YOUR LABEL HERE>") is always a fall back case if this.provenance.apply in the respective Store class (e.g. RootStore) doesn't provide a clear label

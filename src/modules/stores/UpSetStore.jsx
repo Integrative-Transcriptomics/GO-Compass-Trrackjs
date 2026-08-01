@@ -84,7 +84,12 @@ export class UpSetStore {
                     return (combinations.filter((d, i) => !filterIndices.includes(i)))
                 },
                 /**
-                 * Returns ISet or ISetCombination TypeScript object for the currently locked GO-Term or null if nothing is locked
+                 * This is a workaround for UpSet.jsx's local (non-MobX) highlight state not staying in sync when Trrack's undo/redo restores selectionLocked/selectedConditions directly,
+                 * bypassing the onClick={handleClick} path that normally keeps that local state up to date
+                 * Making this a MobX computed value instead means it recomputes automatically from tracked state rather than relying on an explicit call that somehow gets omitted by GO-Compass
+                 * Practical effect: The vertical bars inside our Upset plot now get proper yellow highlighting when you press redo :)
+                 * 
+                 * Returns ISet or ISetCombination TypeScript object for the currently locked condition selection, or null if nothing is locked
                  * Check if this actually conforms to JSDOC annotation standards
                  * @returns {ISet|ISetCombination|null}
                  */
@@ -105,6 +110,7 @@ export class UpSetStore {
                         lockedConditionNames.push(this.dataStore.conditions[conditionIndex]);
                     });
 
+                    // Sort the lockedConditionNames array so we can later compare our arrays position by position
                     lockedConditionNames.sort();
 
                     // A single locked condition maps to a plain set
@@ -126,6 +132,8 @@ export class UpSetStore {
                         combination.sets.forEach(set => {
                             combinationConditionNames.push(set.name);
                         });
+
+                        // Now sort the combinationConditionNames array so we can now compare our arrays position by position [code just below]
                         combinationConditionNames.sort();
 
                         // Check whether the two arrays contain exactly the same set of names ["is this partciular UpSet combination the exact same group of conditions the user has locked?"]
