@@ -136,7 +136,7 @@ export class VisStore {
             setConditionIndex: action((index) => {
                 this.conditionIndex = index;
 
-                // If provenance data is present, update the current conditionIndex in there based on the current ontology
+                // If provenance data is present, update the current conditionIndex inside of this provenance data based on the current ontology
                 if (this.dataStore.rootStore.provenance) {
                     this.dataStore.rootStore.provenance.apply(
                         setConditiionIndexAction({
@@ -194,10 +194,10 @@ export class VisStore {
             setResultsTab: action((tab) => {
                 // Update MobX observed/observable resultsTab field in VisStore instance
                 this.resultsTab = tab;
-                // If provenance data is present, update the current tab in there based on the current ontology
+                // If provenance data is present, update the current tab inside of this provenance data based on the current ontology
                 if (this.dataStore.rootStore.provenance) {
                     this.dataStore.rootStore.provenance.apply(
-                        setResultsTabAction({ontology: this.dataStore.ontology, tab}),
+                        setResultsTabAction({ ontology: this.dataStore.ontology, tab }),
                         // if in tab 0, display All GO-Terms, otherwise display Significant GO-Terms
                         `Set results tab to ${tab === 0 ? "All GO-Terms" : "Significant GO-Terms"} (${this.dataStore.ontology})`);
                 }
