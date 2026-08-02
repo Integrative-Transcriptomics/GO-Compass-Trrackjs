@@ -6,7 +6,7 @@ import {initProvenance, createAction} from "@visdesignlab/trrack";
     This file doesn't contain any syntax (yet) that would justify .jsx usage, but every other store uses .jsx and I don't want it to look out of place.
 */
 
-// Declares initial provenance graph building function so other files can import it, then seeds it with values supplied by RootStore
+// Provenance graph building function. Gets imported by RootStore.jsx, which seeds it with values contained within the RootStore instance
 export function createGoCompassProvenance(initialOntology, initialSignificanceThreshold, initialFilterCutoff, initialClusterCutoff, initialResultsTab, initialSelectionLocked, initialSelectedConditions) {
     const provenance = initProvenance({
         ontology: initialOntology,

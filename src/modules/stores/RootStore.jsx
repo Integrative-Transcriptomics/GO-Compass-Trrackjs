@@ -15,6 +15,12 @@ export class RootStore {
         this.hasFCs = true
         this.geneValues = [];
         this.goSetSize = []
+
+        // SESSION COUNTER
+        // Incremeent sessionID every time init() is called, so App.js can fully "restart" when a session is imported via the importProvenance function
+        // Introduced primarily as a workaround to avoid https://github.com/mobxjs/mobx-react#the-set-of-provided-stores-has-changed-error
+        this.sessionID = 0;
+
         Object.keys(this.ontologies_map).forEach(ont => {
                 this.dataStores[ont] = null
         });
@@ -29,6 +35,8 @@ export class RootStore {
             // init starts dormant
             init: action((results, conditions, tableColumns, hasFC, geneValues, goSetSize, selectedMeasure, pvalueFilter) => {
                 this.initialized=true
+                this.sessionID += 1;
+
                 this.selectedMeasure = selectedMeasure;
                 this.pvalueFilter = pvalueFilter;
                 this.hasGeneInfo = Object.keys(geneValues).length > 0;
@@ -106,14 +114,14 @@ export class RootStore {
                 });
             }),
 
-            // Setting functionality (by Theresa) & tracking functionality (by Mathias) for ontology selection context menu
+            // Setter functionality (by Theresa) & tracking functionality (by Mathias) for ontology selection context menu
             setOntology: action((ontology) => {
                 this.ontology = ontology;
                 if (this.provenance) {
                     this.provenance.apply(setOntologyAction(ontology), `Set ontology to ${ontology}`);
                 }
             }),
-            // Setting functionality (by Theresa) & tracking functionality (by Mathias) for threshold selection context menu
+            // Setter functionality (by Theresa) & tracking functionality (by Mathias) for threshold selection context menu
             setSigThreshold: action((threshold) => {
                 this.sigThreshold = threshold;
                 if (this.provenance) {
@@ -160,7 +168,7 @@ export class RootStore {
                 pvalueFilter: this.pvalueFilter,
             },
 
-            // Turn Trrack's provenance graph into a field value of our session
+            // Turn Trrack's provenance graph into a field value of our session, then stringify it together with the backend data
             provenanceGraph: this.provenance.exportProvenanceGraph(),
         }
 

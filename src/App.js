@@ -208,7 +208,7 @@ const App = observer((props) => {
                     </Toolbar>
                 </AppBar>
             </React.Fragment>
-            <React.Fragment>
+            <React.Fragment key={props.rootStore.sessionID}>
                 {props.rootStore.initialized && views.length > 0 ? views :
                     <SelectData setRootStore={props.rootStore.init}/>}
                 {props.rootStore.initialized && views.length === 0 ?
