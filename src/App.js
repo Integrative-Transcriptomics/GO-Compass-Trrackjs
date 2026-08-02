@@ -118,7 +118,7 @@ const App = observer((props) => {
                             </Typography>
 
                             <Button disabled={!props.rootStore.provenance} startIcon={<GetAppIcon style={{color: "white"}}/>}
-                                style={{color: "white"}}
+                                style={{color: props.rootStore.provenance ? "white" : "rgba(255, 255, 255, 0.3"}} // white if provenance data is found, otherwise grayish black
                                 onClick={() => props.rootStore.exportProvenance()}>
                                 Export
                             </Button>
@@ -141,26 +141,26 @@ const App = observer((props) => {
                             </Button>
                         </div>
                         {props.rootStore.initialized ?
-                        // Trrack'd Title Bar End
-                        // Trrack Provenance-related Actions Start
+                            // Trrack'd Title Bar End
+                            // Trrack Provenance-related Actions Start
                             // Disable Undo button when provenance is not available or when we're already sitting at the root node [strict equality might not be necessary]
                             [<Button key={"undo"} disabled={!props.rootStore.provenance || props.rootStore.provenance.current.id === props.rootStore.provenance.root.id}
-                                     style={{color: "white"}}
-                                     onClick={() => props.rootStore.provenance.undo()}>
-                                <span style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
-                                    <UndoIcon style={{color: "white"}}/>
-                                    <span style={{fontSize: "0.65rem"}}>CTRL+Z</span>
+                                style={{ color: (!props.rootStore.provenance || props.rootStore.provenance.current.id === props.rootStore.provenance.root.id) ? "rgba(255, 255, 255, 0.3)" : "white" }}
+                                onClick={() => props.rootStore.provenance.undo()}>
+                                <span style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                                    <UndoIcon style={{ color: (!props.rootStore.provenance || props.rootStore.provenance.current.id === props.rootStore.provenance.root.id) ? "rgba(255, 255, 255, 0.3)" : "white" }}/>
+                                    <span style={{ fontSize: "0.65rem" }}>CTRL+Z</span>
                                 </span>
                             </Button>,
-                            // Disable Redo button when provenance is not available or when the graph has no children [strict equality is actually necessary]
-                            <Button key={"redo"} disabled={!props.rootStore.provenance || props.rootStore.provenance.current.children.length === 0}
-                                    style={{color: "white"}}
+                                // Disable Redo button when provenance is not available or when the graph has no children [strict equality is actually necessary]
+                                <Button key={"redo"} disabled={!props.rootStore.provenance || props.rootStore.provenance.current.children.length === 0}
+                                    style={{ color: (!props.rootStore.provenance || props.rootStore.provenance.current.children.length === 0) ? "rgba(255, 255, 255, 0.3)" : "white" }}
                                     onClick={() => props.rootStore.provenance.redo()}>
-                                <span style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
-                                    <RedoIcon style={{color: "white"}}/>
-                                    <span style={{fontSize: "0.65rem"}}>CTRL+Y</span>
-                                </span>
-                            </Button>,
+                                    <span style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                                        <RedoIcon style={{ color: (!props.rootStore.provenance || props.rootStore.provenance.current.children.length === 0) ? "rgba(255, 255, 255, 0.3)" : "white" }}/>
+                                        <span style={{ fontSize: "0.65rem" }}>CTRL+Y</span>
+                                    </span>
+                                </Button>,
                             <FormControl className={classes.menuButton} key={"ont"}>
                                 <InputLabel style={{color: "white"}}
                                 >Ontology</InputLabel>
