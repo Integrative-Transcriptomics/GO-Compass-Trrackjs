@@ -166,7 +166,7 @@ export class VisStore {
                 // New case for provenance handling: If provenance data is present, apply setLockedSelectionAction to the provenance data as well
                 if (this.dataStore.rootStore.provenance) {
                     this.dataStore.rootStore.provenance.apply(
-                        setLockedSelectionAction({
+                        setLockedSelectionAction({ // try saying setLockedSelectionAction ten times in a row
                             ontology: this.dataStore.ontology,
                             selectionLocked: this.selectionLocked,
                             selectedConditions: this.selectedConditions

@@ -85,12 +85,12 @@ export class UpSetStore {
                 },
                 /**
                  * This is a workaround for UpSet.jsx's local (non-MobX) highlight state not staying in sync when Trrack's undo/redo restores selectionLocked/selectedConditions directly,
-                 * bypassing the onClick={handleClick} path that normally keeps that local state up to date
-                 * Making this a MobX computed value instead means it recomputes automatically from tracked state rather than relying on an explicit call that somehow gets omitted by GO-Compass
-                 * Practical effect: The vertical bars inside our Upset plot now get proper yellow highlighting when you press redo :)
+                 * bypassing the onClick={handleClick} path that normally keeps that local state up to date.
+                 * Making this a MobX computed value instead means it derives its result from the tracked state on every read, instead of relying on a manual "setter" call that undo/redo has no way to reach
+                 * Practical effect: The vertical bars inside our Upset plot now get proper yellow highlighting when you press redo. :)
                  * 
-                 * Returns ISet or ISetCombination TypeScript object for the currently locked condition selection, or null if nothing is locked
-                 * Check if this actually conforms to JSDOC annotation standards
+                 * Returns ISet or ISetCombination TypeScript object for the currently locked condition selection, or null if nothing is locked.
+                 * Check if this actually conforms to JSDOC annotation standards.
                  * @returns {ISet|ISetCombination|null}
                  */
                 get lockedSelection() {
@@ -122,7 +122,7 @@ export class UpSetStore {
                                 return set; 
                             }
                         }
-                        return null; // if no matching set is found (shouldn't normally happen, but who knows?)
+                        return null; // if no matching set is found. This shouldn't normally happen, but who knows?
                     }
 
                     // Find the correct combination whose set of conditions matches the locked selection
@@ -133,7 +133,7 @@ export class UpSetStore {
                             combinationConditionNames.push(set.name);
                         });
 
-                        // Now sort the combinationConditionNames array so we can now compare our arrays position by position [code just below]
+                        // Now sort the combinationConditionNames array so we can finally compare our arrays position by position [see code just below]
                         combinationConditionNames.sort();
 
                         // Check whether the two arrays contain exactly the same set of names ["is this partciular UpSet combination the exact same group of conditions the user has locked?"]

@@ -13,7 +13,7 @@ import { setFilterCutoffAction, setClusterCutoffAction } from "./ProvenanceStore
  */
 export class DataStore {
     constructor(ontology, dataTable, tree, conditions, tableColumns, rootStore) {
-        // Per default, RootStore creates one DataStore per ontology We now need to provide each DataStore instance with a way to check which ontology it belongs to
+        // Per default, RootStore creates one DataStore per ontology. We now need to provide each DataStore instance with a way to check which ontology it belongs to
         this.ontology = ontology;
 
         this.rootStore = rootStore;

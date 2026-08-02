@@ -1,7 +1,8 @@
 import {initProvenance, createAction} from "@visdesignlab/trrack";
 
 /* 
-    ProvenanceStore.jsx serves as our primary registry of provenance-enabled functions and constants. These can be imported by other files in order to implement the respective tracking functionality.
+    ProvenanceStore.jsx serves as our primary registry of provenance-enabled functions and constants. 
+    These can be imported by other files in order to implement the respective tracking functionality.
     This file doesn't contain any syntax (yet) that would justify .jsx usage, but every other store uses .jsx and I don't want it to look out of place.
 */
 
@@ -20,24 +21,29 @@ export function createGoCompassProvenance(initialOntology, initialSignificanceTh
     return provenance;
 }
 
-// PROVENANCE ACTIONS
-// Syntax is always: createAction( (<state>, <payload>) => { ... } )
-// <state> is the first parameter and literally always Trrack's tracked state
-// <payload> can be a single plain value or a tuple/triplet/... of dependent values, like {ontology, cutoff} or {ontology, selectionLocked, selectedConditions}
+/* ACTIONS ON PROVENANCE
+Syntax is always: createAction( (<state>, <payload>) => { ... } )
+<state> is the first parameter and literally always Trrack's tracked state
+<payload> can be a single plain value or a tuple/triplet/... of dependent values, like {ontology, cutoff} or {ontology, selectionLocked, selectedConditions}
 
-// PSEUDO-ROOTS
+If we perform a forward action, aka an action that adds a child to our provenance graph, we directly execute the action and Trrack logs it.
+If we perform a backward action (like undo/redo), Trrack gets the result and hands it back to us via callback
+*/
+
+// Ontologies serve as pseudo-roots [these nodes can still be child nodes themselves, I really need to find a better term...]
 // Tracker for ontology selector context menu
-// .setLabel("<YOUR LABEL HERE>") is always a fall back case if this.provenance.apply in the respective Store class (e.g. RootStore) doesn't provide a clear label
 export const setOntologyAction = createAction((state, ontology) => {
     state.ontology = ontology;
-}).setLabel("Set Ontology");
+}).setLabel("Set Ontology"); // .setLabel("<LABEL>") is a fall back case if this.provenance.apply in the respective Store class (e.g. RootStore) doesn't provide a clear label
 
+// ONTOLOGY-INDEPENDENT ACTIONS (UNDERLYING VALUE IS SHARED ACROSS ALL ONTOLOGIES)
 // Tracker for significance threshold context menu
+// sigThreshold is an independent value as it lives directly in RootStore.jsx and can be altered via setSigThreshold: action((threshold) => { ... })
 export const setSigThresholdAction = createAction((state, sigThreshold) => {
     state.sigThreshold = sigThreshold;
 }).setLabel("Set Significance Threshold");
 
-// CHILD NODES
+// ONTOLOGY-DEPENDENT ACTIONS (UNDERLYING VALUES ARE DIRECTLY RELIANT ON A GIVEN ONTOLOGY)
 // Tracker for the filter cutoff slider. The slider gets "committed" once a full slider movement is completed by the user
 // ALTERNATE OPTION: Trrack slider on _every_ intermediate drag position (will likely create an enormous amount of additional Trrack states)
 export const setFilterCutoffAction = createAction((state, {ontology, cutoff}) => {
