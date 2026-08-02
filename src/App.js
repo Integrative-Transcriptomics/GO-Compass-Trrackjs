@@ -68,8 +68,8 @@ const App = observer((props) => {
             }
 
             // Hotkey assignment
-            const isUndo = event.ctrlKey && !event.shiftKey && event.key.toLowerCase() === "z";
-            const isRedo = event.ctrlKey && (event.key.toLowerCase() === "y" || (event.shiftKey && event.key.toLowerCase() === "z"));
+            const isUndo = (event.ctrlKey || event.metaKey) && !event.shiftKey && event.key.toLowerCase() === "z";
+            const isRedo = (event.ctrlKey || event.metaKey) && (event.key.toLowerCase() === "y" || (event.shiftKey && event.key.toLowerCase() === "z"));
 
             // Execute undo/redo logic depending on what button has been triggered
             if (isUndo) {
@@ -144,15 +144,23 @@ const App = observer((props) => {
                         // Trrack'd Title Bar End
                         // Trrack Provenance-related Actions Start
                             // Disable Undo button when provenance is not available or when we're already sitting at the root node [strict equality might not be necessary]
-                            [<IconButton key={"undo"} disabled={!props.rootStore.provenance || props.rootStore.provenance.current.id === props.rootStore.provenance.root.id}
-                                         onClick={() => props.rootStore.provenance.undo()}>
-                                <UndoIcon style={{color: "white"}}/>
-                            </IconButton>,
+                            [<Button key={"undo"} disabled={!props.rootStore.provenance || props.rootStore.provenance.current.id === props.rootStore.provenance.root.id}
+                                     style={{color: "white"}}
+                                     onClick={() => props.rootStore.provenance.undo()}>
+                                <span style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
+                                    <UndoIcon style={{color: "white"}}/>
+                                    <span style={{fontSize: "0.65rem"}}>CTRL+Z</span>
+                                </span>
+                            </Button>,
                             // Disable Redo button when provenance is not available or when the graph has no children [strict equality is actually necessary]
-                            <IconButton key={"redo"} disabled={!props.rootStore.provenance || props.rootStore.provenance.current.children.length === 0}
-                                        onClick={() => props.rootStore.provenance.redo()}>
-                                <RedoIcon style={{color: "white"}}/>
-                            </IconButton>,
+                            <Button key={"redo"} disabled={!props.rootStore.provenance || props.rootStore.provenance.current.children.length === 0}
+                                    style={{color: "white"}}
+                                    onClick={() => props.rootStore.provenance.redo()}>
+                                <span style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
+                                    <RedoIcon style={{color: "white"}}/>
+                                    <span style={{fontSize: "0.65rem"}}>CTRL+Y</span>
+                                </span>
+                            </Button>,
                             <FormControl className={classes.menuButton} key={"ont"}>
                                 <InputLabel style={{color: "white"}}
                                 >Ontology</InputLabel>
