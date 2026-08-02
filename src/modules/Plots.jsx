@@ -122,6 +122,10 @@ const Plots = inject("dataStore", "visStore")(observer((props) => {
                                 </Button> : null}
                         </ButtonGroup>
                     <Tabs ref={tabRef} value={props.visStore.resultsTab} onChange={(e, v) => {
+                        /* replaced value={selectedTab} with value={props.visStore.resultsTab} in the line above as we need it to be MobX-trackable for undo/redo
+                        * onChange always calls back with (event, value)
+                        * e is the raw event object that never gets used here.
+                        * v is the new tab's value that we want to set the resultsTab to */
                         props.visStore.unlock();
                         // Update tracked ResultsTab using v
                         props.visStore.setResultsTab(v);

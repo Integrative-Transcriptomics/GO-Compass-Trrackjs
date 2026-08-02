@@ -208,6 +208,10 @@ const App = observer((props) => {
                     </Toolbar>
                 </AppBar>
             </React.Fragment>
+            {/* Whenever the sessionID in RootStore changes, React treats the fragement down below and everything inside of it as a brand new element.
+                This allows us to avoid the https://github.com/mobxjs/mobx-react#the-set-of-provided-stores-has-changed-error issue,
+                although I'm still not entirely sure about the underlying React logic here
+            */}
             <React.Fragment key={props.rootStore.sessionID}>
                 {props.rootStore.initialized && views.length > 0 ? views :
                     <SelectData setRootStore={props.rootStore.init}/>}

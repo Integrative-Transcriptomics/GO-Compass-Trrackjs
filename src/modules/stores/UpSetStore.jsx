@@ -90,7 +90,7 @@ export class UpSetStore {
                  * Practical effect: The vertical bars inside our Upset plot now get proper yellow highlighting when you press redo. :)
                  * 
                  * Returns ISet or ISetCombination TypeScript object for the currently locked condition selection, or null if nothing is locked.
-                 * Check if this actually conforms to JSDOC annotation standards.
+                 * TODO: Check if there's really no better way to handle this somewhat weird case
                  * @returns {ISet|ISetCombination|null}
                  */
                 get lockedSelection() {

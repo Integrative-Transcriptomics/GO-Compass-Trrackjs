@@ -11,10 +11,12 @@ const DraggableTriangle = inject("visStore")(observer((props) => {
     const xScale = props.xScale;
     const ref = createRef();
 
-    // Relevant for tracking: Did user drag the triangle? [effect fires when a drag ends, aka when a drag gets committed]
+    /* Detect the exact moment the user finished dragging their mouse
+    * Effect fires when a drag ends, aka exactly when a drag gets "committed" by the user.
+    * This prevent us from reading thousands of irrelevant little mouse movements human users tend to make while dragging things around
+    */
     const userWasDragging = useRef(false);
-
-    // TODO: Verifiy functionality
+    
     useEffect(() => {
         if (userWasDragging.current && !dragging) {
             props.onDragEnd();
