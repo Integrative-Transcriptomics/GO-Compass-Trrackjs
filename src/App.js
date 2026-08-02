@@ -122,7 +122,7 @@ const App = observer((props) => {
                                 onClick={() => props.rootStore.exportProvenance()}>
                                 Export
                             </Button>
-                            <Button disabled={!props.rootStore.provenance} startIcon={<PublishIcon style={{color: "white"}}/>}
+                            <Button startIcon={<PublishIcon style={{color: "white"}}/>}
                             // needed as "label" so the button can trigger the file picker
                                 style={{color: "white"}}
                                 component="label"> 
