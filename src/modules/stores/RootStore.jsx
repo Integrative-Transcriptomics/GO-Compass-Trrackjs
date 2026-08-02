@@ -47,88 +47,125 @@ export class RootStore {
                     return ({id: ont, name: this.ontologies_map[ont]})
                 });
                 this.sigThreshold = Number(pvalueFilter) <= 0.05 ? Number(pvalueFilter) : 0.05
+                
                 // TRRACK COMPONENT FOR MobX extendObservable START
-                // Seed per-ontology maps ({ontologyId: value}) for filter/cluster cutoffs and results tab (maybe more to come)
-                const initialFilterCutoff = {}, initialClusterCutoff = {}, initialResultsTab = {}, initialSelectionLocked = {}, initialSelectedConditions = {};
-                Object.keys(this.dataStores).forEach(ont => {
-                    if (this.dataStores[ont]) {
-                        initialFilterCutoff[ont] = this.dataStores[ont].filterCutoff;
-                        initialClusterCutoff[ont] = this.dataStores[ont].clusterCutoff;
-                        initialResultsTab[ont] = this.dataStores[ont].visStore.resultsTab;
-
-                        initialSelectionLocked[ont] = this.dataStores[ont].visStore.selectionLocked;
-                        initialSelectedConditions[ont] = this.dataStores[ont].visStore.selectedConditions;
-                    }
-                });
+                // We addtionally need to keep the three values below stored as fields so we can perform a full data export/import later on
+                this.conditions = conditions;
+                this.results = results;
+                this.tableColumns = tableColumns;
                 // Create Provenance and observe it globally
-                this.provenance = createGoCompassProvenance(this.ontology, this.sigThreshold, initialFilterCutoff, initialClusterCutoff, initialResultsTab, initialSelectionLocked, initialSelectedConditions);
+                const { filterCutoff, clusterCutoff, resultsTab, selectionLocked, selectedConditions } = this.seedStatesPerOntology();
+                this.provenance = createGoCompassProvenance(this.ontology, this.sigThreshold, filterCutoff, clusterCutoff, resultsTab, selectionLocked, selectedConditions);
                 // Replay into RootStore only on undo/redo/ [goToNode later if we start doing graph stuff}
                 // NOTE: Don't use it on apply()
                 this.provenance.addGlobalObserver(action((graph, change) => {
                     // This flag tells Trrack that the app state has changed (keeps it in sync with MobX)
-                    if (change === "CurrentChanged") { 
+                    if (change === "CurrentChanged") {
                         const state = this.provenance.state;
-                        // 
+                        //
                         this.ontology = state.ontology;
                         this.sigThreshold = state.sigThreshold;
-                        // Restore per-ontology state directly (bypassing DataStore bzw. VisStore actions) so this doesn't re-trigger provenance.apply and loops back on itself
-                        Object.keys(state.filterCutoff).forEach(ont => {
-                            if (this.dataStores[ont]) {
-                                this.dataStores[ont].filterCutoff = state.filterCutoff[ont];
-                                this.dataStores[ont].clusterCutoff = state.clusterCutoff[ont];
-                                this.dataStores[ont].visStore.resultsTab = state.resultsTab[ont];
-
-                                this.dataStores[ont].visStore.selectionLocked = state.selectionLocked[ont];
-                                this.dataStores[ont].visStore.selectedConditions = state.selectedConditions[ont];
-                            }
-                        });
+                        this.restoreStatesPerOntology(state);
                     }
                 }));
             }),
-            // Tracking functionality for ontology selection context menu
-           setOntology: action((ontology) => {
+
+            // Seed per-ontology maps for filter/cluster cutoffs and results tab (more to come)
+            // Technically we do not need a separate function for initial seeding, it could be done right next to this.provenance = createGoCompassProvenance(...), but it does improve readability, in my opinion
+            seedStatesPerOntology: action(() => {
+                const initialFilterCutoff = {}, initialClusterCutoff = {}, initialResultsTab = {}, initialSelectionLocked = {}, initialSelectedConditions = {};
+                // "for every ontology ID available, if said ontology ID has a DataStore instance, 
+                // read its current values and then use them to seed Trrack's initial per-ontology state"
+                Object.keys(this.dataStores).forEach(ont => {
+                    if (this.dataStores[ont]) {
+                        initialFilterCutoff[ont] = this.dataStores[ont].filterCutoff;
+                        initialClusterCutoff[ont] = this.dataStores[ont].clusterCutoff;
+
+                        initialResultsTab[ont] = this.dataStores[ont].visStore.resultsTab;
+                        initialSelectionLocked[ont] = this.dataStores[ont].visStore.selectionLocked;
+                        initialSelectedConditions[ont] = this.dataStores[ont].visStore.selectedConditions;
+                    }
+                });
+                return { filterCutoff: initialFilterCutoff, clusterCutoff: initialClusterCutoff, resultsTab: initialResultsTab, selectionLocked: initialSelectionLocked, selectedConditions: initialSelectedConditions };
+            }),
+
+            // Restore per-ontology state directly to the DataStore/VisStore/ instances [filter/cluster cutoffs, results tab, locked selection, more to come...]
+            // This revision now bypasses their actions, preventing provenance.apply() from getting re-triggered, thus avoiding some strange self-loop
+            restoreStatesPerOntology: action((state) => {
+                // "for every ontology ID available, if said ontology ID has a DataStore instance, 
+                // read Trrack's current per-ontology state and use it to restore the DataStore's and VisStore's value"
+                Object.keys(this.dataStores).forEach(ont => {
+                    if (this.dataStores[ont]) {
+                        this.dataStores[ont].filterCutoff = state.filterCutoff[ont];
+                        this.dataStores[ont].clusterCutoff = state.clusterCutoff[ont];
+
+                        this.dataStores[ont].visStore.resultsTab = state.resultsTab[ont];
+                        this.dataStores[ont].visStore.selectionLocked = state.selectionLocked[ont];
+                        this.dataStores[ont].visStore.selectedConditions = state.selectedConditions[ont];
+                    }
+                });
+            }),
+
+            // Setting functionality (by Theresa) & tracking functionality (by Mathias) for ontology selection context menu
+            setOntology: action((ontology) => {
                 this.ontology = ontology;
-                if (this.provenance) { 
+                if (this.provenance) {
                     this.provenance.apply(setOntologyAction(ontology), `Set ontology to ${ontology}`);
                 }
             }),
-            // Tracking functionality for threshold selection context menu
+            // Setting functionality (by Theresa) & tracking functionality (by Mathias) for threshold selection context menu
             setSigThreshold: action((threshold) => {
                 this.sigThreshold = threshold;
                 if (this.provenance) {
                     this.provenance.apply(setSigThresholdAction(threshold), `Set significance threshold to ${threshold}`);
                 }
             }),
-            // Import provenance data functionality for data previously created by exportProvenance()
+
+            // Import session & provenance data functionality for data previously created by exportProvenance()
+            // Due to MobX batching,
             importProvenance: action((json) => {
-                this.provenance.importProvenanceGraph(json);
+                const session = JSON.parse(json);
+                this.init(session.sessionData.results, session.sessionData.conditions, session.sessionData.tableColumns,
+                    session.sessionData.hasFC, session.sessionData.geneValues, session.sessionData.goSetSize,
+                    session.sessionData.selectedMeasure, session.sessionData.pvalueFilter);
+
+                this.provenance.importProvenanceGraph(session.provenanceGraph);
+
                 const state = this.provenance.state;
                 this.ontology = state.ontology;
                 this.sigThreshold = state.sigThreshold;
-                // Restore per-ontology state directly (bypassing DataStore bzw. VisStore actions) so this doesn't re-trigger provenance.apply and loops back on itself
-                Object.keys(state.filterCutoff).forEach(ont => {
-                    if (this.dataStores[ont]) {
-                        this.dataStores[ont].filterCutoff = state.filterCutoff[ont];
-                        this.dataStores[ont].clusterCutoff = state.clusterCutoff[ont];
-                        this.dataStores[ont].visStore.resultsTab = state.resultsTab[ont];
-
-                        this.dataStores[ont].visStore.selectionLocked = state.selectionLocked[ont];
-                        this.dataStores[ont].visStore.selectedConditions = state.selectedConditions[ont];
-                    }
-                });
+                this.restoreStatesPerOntology(state);
             }),
         });
         // TRRACK COMPONENT FOR MobX extendObservable END
     }
 
-    // Export provenance data to a JSON file so that it may later be imported using importProvenance()
+    // Export session & provenance data to a JSON file so that it may later be imported using importProvenance()
     exportProvenance() {
         if (!this.provenance) {
             console.error("Provenance graph is not yet initialized.");
             return;
         }
-        const json = this.provenance.exportProvenanceGraph();
-        let blob = new Blob([json], {type: 'application/json;charset=utf-8;'})
+
+        // Create constant based on the values the Python backend has sent back to us after having performed its calculations on the input data
+        const session = {
+            sessionData: {
+                results: this.results,
+                conditions: this.conditions,
+                tableColumns: this.tableColumns,
+                hasFC: this.hasFCs,
+                geneValues: this.geneValues,
+                goSetSize: this.goSetSize,
+                selectedMeasure: this.selectedMeasure,
+                pvalueFilter: this.pvalueFilter,
+            },
+
+            // Turn Trrack's provenance graph into a field value of our session
+            provenanceGraph: this.provenance.exportProvenanceGraph(),
+        }
+
+        const json = JSON.stringify(session);
+        let blob = new Blob([json], { type: 'application/json;charset=utf-8;' })
         let url = URL.createObjectURL(blob);
         let link = document.createElement("a");
         link.setAttribute("href", url);
