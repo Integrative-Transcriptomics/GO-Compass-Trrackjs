@@ -4,7 +4,7 @@ import {getTextWidth} from "../../UtilityFunctions";
 import traverseTree from "../ClusteredHeatmap/RFLayout";
 
 // Import Trrack functionality from ProvenanceStore.jsx
-import { setResultsTabAction, setLockedSelectionAction } from "./ProvenanceStore";
+import { setConditiionIndexAction, setResultsTabAction, setLockedSelectionAction } from "./ProvenanceStore";
 
 /**
  * store for visualization operations
@@ -135,6 +135,16 @@ export class VisStore {
             }),
             setConditionIndex: action((index) => {
                 this.conditionIndex = index;
+
+                // If provenance data is present, update the current conditionIndex in there based on the current ontology
+                if (this.dataStore.rootStore.provenance) {
+                    this.dataStore.rootStore.provenance.apply(
+                        setConditiionIndexAction({
+                            ontology: this.dataStore.ontology,
+                            index: index
+                        }),
+                        `Set condition index to ${index} (${this.dataStore.ontology})`);
+                }
             }),
             setSigThreshold: action((threshold) => {
                 this.sigThreshold = threshold;
@@ -184,7 +194,7 @@ export class VisStore {
             setResultsTab: action((tab) => {
                 // Update MobX observed/observable resultsTab field in VisStore instance
                 this.resultsTab = tab;
-                // Only execute logic when provenance data is present
+                // If provenance data is present, update the current tab in there based on the current ontology
                 if (this.dataStore.rootStore.provenance) {
                     this.dataStore.rootStore.provenance.apply(
                         setResultsTabAction({ontology: this.dataStore.ontology, tab}),

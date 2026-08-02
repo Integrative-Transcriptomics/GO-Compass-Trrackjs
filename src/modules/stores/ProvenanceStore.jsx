@@ -7,12 +7,13 @@ import {initProvenance, createAction} from "@visdesignlab/trrack";
 */
 
 // Provenance graph building function. Gets imported by RootStore.jsx, which seeds it with values contained within the RootStore instance
-export function createGoCompassProvenance(initialOntology, initialSignificanceThreshold, initialFilterCutoff, initialClusterCutoff, initialResultsTab, initialSelectionLocked, initialSelectedConditions) {
+export function createGoCompassProvenance(initialOntology, initialSignificanceThreshold, initialFilterCutoff, initialClusterCutoff, initialConditionIndex, initialResultsTab, initialSelectionLocked, initialSelectedConditions) {
     const provenance = initProvenance({
         ontology: initialOntology,
         sigThreshold: initialSignificanceThreshold,
         filterCutoff: initialFilterCutoff,
         clusterCutoff: initialClusterCutoff,
+        conditionIndex: initialConditionIndex,
         resultsTab: initialResultsTab,
         selectionLocked: initialSelectionLocked,
         selectedConditions: initialSelectedConditions,
@@ -55,6 +56,13 @@ export const setFilterCutoffAction = createAction((state, {ontology, cutoff}) =>
 export const setClusterCutoffAction = createAction((state, {ontology, cutoff}) => {
     state.clusterCutoff[ontology] = cutoff;
 }).setLabel("Set Cluster Cutoff");
+
+// Tracker for the condition index of the respective DataStore condition(s) value 
+// conditionIndex records which specific comparison pair (like D8vsD0, ...) is currently selected/getting displayed to the user in the top right treemap panel
+// If the user clicks that pair's visualization, the treemap plays an animation and "reacts" to the click by showing a specific comparison table
+export const setConditiionIndexAction = createAction((state, {ontology, index}) => {
+    state.conditionIndex[ontology] = index;
+}).setLabel("Set Condition Index");
 
 // Tracker for the "All GO-Terms" / "Significant GO-Terms" results tab that you can see in the bottom left view quadrant
 export const setResultsTabAction = createAction((state, {ontology, tab}) => {

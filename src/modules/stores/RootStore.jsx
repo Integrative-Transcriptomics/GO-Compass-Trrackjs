@@ -62,8 +62,8 @@ export class RootStore {
                 this.results = results;
                 this.tableColumns = tableColumns;
                 // Create Provenance and observe it globally
-                const { filterCutoff, clusterCutoff, resultsTab, selectionLocked, selectedConditions } = this.seedStatesPerOntology();
-                this.provenance = createGoCompassProvenance(this.ontology, this.sigThreshold, filterCutoff, clusterCutoff, resultsTab, selectionLocked, selectedConditions);
+                const { filterCutoff, clusterCutoff, conditionIndex, resultsTab, selectionLocked, selectedConditions } = this.seedStatesPerOntology();
+                this.provenance = createGoCompassProvenance(this.ontology, this.sigThreshold, filterCutoff, clusterCutoff, conditionIndex, resultsTab, selectionLocked, selectedConditions);
                 // Replay into RootStore only on undo/redo/ [goToNode later if we start doing graph stuff}
                 // NOTE: Don't use it on apply()
                 this.provenance.addGlobalObserver(action((graph, change) => {
@@ -81,7 +81,7 @@ export class RootStore {
             // Seed per-ontology maps for filter/cluster cutoffs and results tab (more to come)
             // Technically we do not need a separate function for initial seeding, it could be done right next to this.provenance = createGoCompassProvenance(...), but it does improve readability, in my opinion
             seedStatesPerOntology: action(() => {
-                const initialFilterCutoff = {}, initialClusterCutoff = {}, initialResultsTab = {}, initialSelectionLocked = {}, initialSelectedConditions = {};
+                const initialFilterCutoff = {}, initialClusterCutoff = {}, initialConditionIndex = {}, initialResultsTab = {}, initialSelectionLocked = {}, initialSelectedConditions = {};
                 // "for every ontology ID available, if said ontology ID has a DataStore instance, 
                 // read its current values and then use them to seed Trrack's initial per-ontology state"
                 Object.keys(this.dataStores).forEach(ont => {
@@ -89,12 +89,16 @@ export class RootStore {
                         initialFilterCutoff[ont] = this.dataStores[ont].filterCutoff;
                         initialClusterCutoff[ont] = this.dataStores[ont].clusterCutoff;
 
+                        initialConditionIndex[ont] = this.dataStores[ont].visStore.conditionIndex;
+
                         initialResultsTab[ont] = this.dataStores[ont].visStore.resultsTab;
                         initialSelectionLocked[ont] = this.dataStores[ont].visStore.selectionLocked;
                         initialSelectedConditions[ont] = this.dataStores[ont].visStore.selectedConditions;
                     }
                 });
-                return { filterCutoff: initialFilterCutoff, clusterCutoff: initialClusterCutoff, resultsTab: initialResultsTab, selectionLocked: initialSelectionLocked, selectedConditions: initialSelectedConditions };
+                return { filterCutoff: initialFilterCutoff, clusterCutoff: initialClusterCutoff, 
+                    conditionIndex: initialConditionIndex, 
+                    resultsTab: initialResultsTab, selectionLocked: initialSelectionLocked, selectedConditions: initialSelectedConditions };
             }),
 
             // Restore per-ontology state directly to the DataStore/VisStore/ instances [filter/cluster cutoffs, results tab, locked selection, more to come...]
@@ -106,6 +110,8 @@ export class RootStore {
                     if (this.dataStores[ont]) {
                         this.dataStores[ont].filterCutoff = state.filterCutoff[ont];
                         this.dataStores[ont].clusterCutoff = state.clusterCutoff[ont];
+
+                        this.dataStores[ont].visStore.conditionIndex = state.conditionIndex[ont];
 
                         this.dataStores[ont].visStore.resultsTab = state.resultsTab[ont];
                         this.dataStores[ont].visStore.selectionLocked = state.selectionLocked[ont];
@@ -177,7 +183,7 @@ export class RootStore {
         let url = URL.createObjectURL(blob);
         let link = document.createElement("a");
         link.setAttribute("href", url);
-        link.setAttribute("download", "go-compass-provenance.json");
+        link.setAttribute("download", "go-compass-session-export.json");
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
