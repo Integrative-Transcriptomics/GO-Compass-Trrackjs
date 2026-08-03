@@ -62,11 +62,12 @@ export class RootStore {
                 this.results = results;
                 this.tableColumns = tableColumns;
 
-                // Create Provenance and observe it globally
-                // Build sextuple with our initial tracking values by calling seedStatesPerOntology()
-                const { filterCutoff, clusterCutoff, conditionIndex, resultsTab, selectionLocked, selectedConditions, scaleLocked } = this.seedStatesPerOntology();
-
-                /* Call createGoCompassProvenance from ProvenanceStore to build provenance out of:
+                // OLD, CAN PROBABLY BE DELETED
+                // Build septuple with our initial tracking values by calling seedStatesPerOntology()
+                // const { filterCutoff, clusterCutoff, conditionIndex, resultsTab, selectionLocked, selectedConditions, scaleLocked } = this.seedStatesPerOntology();
+                
+                /* Create Provenance and observe it globally
+                * Call createGoCompassProvenance from ProvenanceStore to build provenance out of:
                 *  Global, independent variables:
                 *   ontology and sigThreshold:              Global values shared by the entirety of GO-Compass. They're set up via extendObservable right in _this_ specific RootStore instance
                 *
@@ -81,8 +82,10 @@ export class RootStore {
                 * 
                 *   selectionLocked and selectedConditions: Ontology-dependent values that record whetehr a set/intersection selection is currently locked in the
                 *                                           UpSet plot and which conditions it contains (Significant GO-Terms tab, bottom left quadrant)
+                *
+                *   scaleLocked:                            Ontology-dependent value that ... TODO
                 */
-                this.provenance = createGoCompassProvenance(this.ontology, this.sigThreshold, filterCutoff, clusterCutoff, conditionIndex, resultsTab, selectionLocked, selectedConditions, scaleLocked);
+                this.provenance = createGoCompassProvenance(this.ontology, this.sigThreshold, this.seedStatesPerOntology());
                 // Replay into RootStore only on undo/redo/ [goToNode later if we start doing graph stuff}
                 // NOTE: Don't use it on apply()
                 this.provenance.addGlobalObserver(action((graph, change) => {

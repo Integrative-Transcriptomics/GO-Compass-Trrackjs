@@ -6,22 +6,16 @@ import {initProvenance, createAction} from "@visdesignlab/trrack";
 * This file doesn't contain any syntax (yet) that would justify .jsx usage, but every other store uses .jsx and I don't want it to look out of place.
 */
 
-// Provenance graph building function. Gets imported by RootStore.jsx, which seeds it with values contained within the RootStore instance
-export function createGoCompassProvenance(initialOntology, initialSignificanceThreshold,
-    initialFilterCutoff, initialClusterCutoff,
-    initialConditionIndex,
-    initialResultsTab, initialSelectionLocked, initialSelectedConditions,
-    initialScaleLocked) {
+/* 
+* Provenance graph building function. Gets imported by RootStore.jsx, which seeds it with values contained within the RootStore instance
+* Object spread ("...") copies every key-value pair from the initialPerOntologyState object directly into the plain initial-state object (filterCutoff, clusterCutoff ... etc.)
+* This object then gets passed to Trrack's initProvenance(...), which then builds the actual provenance object 
+*/
+export function createGoCompassProvenance(initialOntology, initialSignificanceThreshold, initialPerOntologyState) {
     const provenance = initProvenance({
         ontology: initialOntology,
         sigThreshold: initialSignificanceThreshold,
-        filterCutoff: initialFilterCutoff,
-        clusterCutoff: initialClusterCutoff,
-        conditionIndex: initialConditionIndex,
-        resultsTab: initialResultsTab,
-        selectionLocked: initialSelectionLocked,
-        selectedConditions: initialSelectedConditions,
-        scaleLocked: initialScaleLocked,
+        ...initialPerOntologyState, 
     });
     provenance.done(); // provenance needs to have been built before provenance.apply(...) can be used due how its implemented in ProvenanceCreator.ts
     return provenance;
