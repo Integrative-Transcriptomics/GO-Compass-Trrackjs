@@ -4,7 +4,7 @@ import {getTextWidth} from "../../UtilityFunctions";
 import traverseTree from "../ClusteredHeatmap/RFLayout";
 
 // Import Trrack functionality from ProvenanceStore.jsx
-import { setConditiionIndexAction, setResultsTabAction, setLockedSelectionAction } from "./ProvenanceStore";
+import { setConditiionIndexAction, setResultsTabAction, setLockedSelectionAction, setScaleLockedAction } from "./ProvenanceStore";
 
 /**
  * store for visualization operations
@@ -26,7 +26,10 @@ export class VisStore {
             selectionLocked: false,
             conditionIndex: 0,
             stepsize: 10,
-            resultsTab: 0, // initiate Trrack with tab 0 ["All GO-Terms" tab]
+
+            // Extra vis-values to be observed only for Trrack
+            resultsTab: 0,      // Overview List Comparison in bottom left quadrant starts in tab 0: "All GO-Terms"
+            scaleLocked: true,  // per default, "LOCK Y-SCALE" in bottom right quadrant starts locked
 
             /**
              * color Scale for terms
@@ -150,8 +153,8 @@ export class VisStore {
                 this.sigThreshold = threshold;
             }),
             unlock: action(() => {
-                // Only commit to provenance if there was actually something locked to clear 
-                // unlock() also fires on every tab switch even with nothing selected
+                // Only appy on provenance data if there was is a locked-in selection
+                // unlock() also fires on every tab switch even if nothing is selected
                 const hadSelection = (this.selectionLocked || this.selectedConditions.length > 0);
 
                 this.selectionLocked = false;
@@ -189,19 +192,32 @@ export class VisStore {
                     this.selectedConditions = [...new Set(indices)];
                 }
             }),
-            // Provenance-enabled ResultsTab display for when the user clicks the ALL GO-Terms / Significant GO-Terms tab in Plots.jsx
-            // TODO: Add better explanation
+            // Provenance-enabled ResultsTab display for when the user clicks the ALL GO-Terms / Significant GO-Terms tab in Overview List Comparison (bottom left quadrant)
+            // TODO: Improve explanation
             setResultsTab: action((tab) => {
                 // Update MobX observed/observable resultsTab field in VisStore instance
                 this.resultsTab = tab;
                 // If provenance data is present, update the current tab inside of this provenance data based on the current ontology
                 if (this.dataStore.rootStore.provenance) {
                     this.dataStore.rootStore.provenance.apply(
-                        setResultsTabAction({ ontology: this.dataStore.ontology, tab }),
+                        setResultsTabAction({ ontology: this.dataStore.ontology, tab: tab }),
                         // if in tab 0, display All GO-Terms, otherwise display Significant GO-Terms
                         `Set results tab to ${tab === 0 ? "All GO-Terms" : "Significant GO-Terms"} (${this.dataStore.ontology})`);
                 }
             }),
+            // Provenance-enabled (UN)LOCK Y-SCALE for when the user clicks sole button in Detailed Comparison (bottom right quadrant)
+            // TODO: Improve explanation
+            setScaleLocked: action((locked) => {
+                // Update MobX observed/observable locked field in VisStore instance
+                this.scaleLocked = locked;
+                // If provenance data is present, update the current tab inside of this provenance data based on the current ontology
+                if (this.dataStore.rootStore.provenance) {
+                    this.dataStore.rootStore.provenance.apply(
+                        setScaleLockedAction({ ontology: this.dataStore.ontology, locked: locked }),
+                        // if in tab 0, display All GO-Terms, otherwise display Significant GO-Terms
+                        `${locked ? "Lock" : "Unlock"} Y-Scale (${this.dataStore.ontology})`);
+                }
+            })
         })
     }
 }

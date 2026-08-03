@@ -209,7 +209,7 @@ const App = observer((props) => {
                 </AppBar>
             </React.Fragment>
             {/* Whenever the sessionID in RootStore changes, React treats the fragement down below and everything inside of it as a brand new element.
-                This allows us to avoid the https://github.com/mobxjs/mobx-react#the-set-of-provided-stores-has-changed-error [link isn't helpful at all] issue,
+                This allows us to avoid the https://github.com/mobxjs/mobx-react#the-set-of-provided-stores-has-changed-error issue [link isn't very helpful at all],
                 although I'm still not entirely sure about the underlying React logic here. Here are the two sources that provided me with the idea for my solution/workaround:
                 https://cmichel.io/react-fun-with-keys/, https://www.nikgraf.com/blog/using-reacts-key-attribute-to-remount-a-component
             */}

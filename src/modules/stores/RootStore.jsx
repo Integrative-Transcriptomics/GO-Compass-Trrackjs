@@ -64,7 +64,7 @@ export class RootStore {
 
                 // Create Provenance and observe it globally
                 // Build sextuple with our initial tracking values by calling seedStatesPerOntology()
-                const { filterCutoff, clusterCutoff, conditionIndex, resultsTab, selectionLocked, selectedConditions } = this.seedStatesPerOntology();
+                const { filterCutoff, clusterCutoff, conditionIndex, resultsTab, selectionLocked, selectedConditions, scaleLocked } = this.seedStatesPerOntology();
 
                 /* Call createGoCompassProvenance from ProvenanceStore to build provenance out of:
                 *  Global, independent variables:
@@ -82,7 +82,7 @@ export class RootStore {
                 *   selectionLocked and selectedConditions: Ontology-dependent values that record whetehr a set/intersection selection is currently locked in the
                 *                                           UpSet plot and which conditions it contains (Significant GO-Terms tab, bottom left quadrant)
                 */
-                this.provenance = createGoCompassProvenance(this.ontology, this.sigThreshold, filterCutoff, clusterCutoff, conditionIndex, resultsTab, selectionLocked, selectedConditions);
+                this.provenance = createGoCompassProvenance(this.ontology, this.sigThreshold, filterCutoff, clusterCutoff, conditionIndex, resultsTab, selectionLocked, selectedConditions, scaleLocked);
                 // Replay into RootStore only on undo/redo/ [goToNode later if we start doing graph stuff}
                 // NOTE: Don't use it on apply()
                 this.provenance.addGlobalObserver(action((graph, change) => {
@@ -97,44 +97,59 @@ export class RootStore {
                 }));
             }),
 
-            // Seed per-ontology maps for filter/cluster cutoffs and results tab (more to come)
-            // Technically we do not need a separate function for initial seeding, it could be done right next to this.provenance = createGoCompassProvenance(...), but it does improve readability, in my opinion
+            // Seed/populate per-ontology maps for all values that we want to track via our provenance graph
+            // Technically we do not need a separate function for initial seeding, it could be done right next to this.provenance = createGoCompassProvenance(...), but in my opinion, it does improve readability
             seedStatesPerOntology: action(() => {
-                const initialFilterCutoff = {}, initialClusterCutoff = {}, initialConditionIndex = {}, initialResultsTab = {}, initialSelectionLocked = {}, initialSelectedConditions = {};
+                const initialFilterCutoff = {}, initialClusterCutoff = {}, initialConditionIndex = {}, initialResultsTab = {}, initialSelectionLocked = {}, initialSelectedConditions = {}, initialScaleLocked = {};
                 // "for every ontology ID available, if said ontology ID has a DataStore instance, 
                 // read its current values and then use them to seed Trrack's initial per-ontology state"
                 Object.keys(this.dataStores).forEach(ont => {
                     if (this.dataStores[ont]) {
+                        // Values relevant for the top left quadrant of the app
                         initialFilterCutoff[ont] = this.dataStores[ont].filterCutoff;
                         initialClusterCutoff[ont] = this.dataStores[ont].clusterCutoff;
 
+                        // Values relevant for the top right quadrant of the app
                         initialConditionIndex[ont] = this.dataStores[ont].visStore.conditionIndex;
 
+                        // Values relevant for the bottom left quadrant of the app
                         initialResultsTab[ont] = this.dataStores[ont].visStore.resultsTab;
                         initialSelectionLocked[ont] = this.dataStores[ont].visStore.selectionLocked;
                         initialSelectedConditions[ont] = this.dataStores[ont].visStore.selectedConditions;
+
+                        // Values relevant for the bottom right quadrant of the app
+                        initialScaleLocked[ont] = this.dataStores[ont].visStore.scaleLocked;
                     }
                 });
-                return { filterCutoff: initialFilterCutoff, clusterCutoff: initialClusterCutoff, 
-                    conditionIndex: initialConditionIndex, 
-                    resultsTab: initialResultsTab, selectionLocked: initialSelectionLocked, selectedConditions: initialSelectedConditions };
+                return {
+                    filterCutoff: initialFilterCutoff, clusterCutoff: initialClusterCutoff,
+                    conditionIndex: initialConditionIndex,
+                    resultsTab: initialResultsTab, selectionLocked: initialSelectionLocked, selectedConditions: initialSelectedConditions,
+                    scaleLocked: initialScaleLocked
+                };
             }),
 
-            // Restore per-ontology state directly to the DataStore/VisStore/ instances [filter/cluster cutoffs, results tab, locked selection, more to come...]
+            // Restore per-ontology state directly to the DataStore/VisStore/ instances [filter/cluster cutoffs, results tab, locked selection, perhaps more to come...]
             // This revision now bypasses their actions, preventing provenance.apply() from getting re-triggered, thus avoiding some strange self-loop
             restoreStatesPerOntology: action((state) => {
                 // "for every ontology ID available, if said ontology ID has a DataStore instance, 
                 // read Trrack's current per-ontology state and use it to restore the DataStore's and VisStore's value"
                 Object.keys(this.dataStores).forEach(ont => {
                     if (this.dataStores[ont]) {
+                        // Values relevant for the top left quadrant of the app
                         this.dataStores[ont].filterCutoff = state.filterCutoff[ont];
                         this.dataStores[ont].clusterCutoff = state.clusterCutoff[ont];
 
+                        // Values relevant for the top right quadrant of the app
                         this.dataStores[ont].visStore.conditionIndex = state.conditionIndex[ont];
 
+                        // Values relevant for the bottom left quadrant of the app
                         this.dataStores[ont].visStore.resultsTab = state.resultsTab[ont];
                         this.dataStores[ont].visStore.selectionLocked = state.selectionLocked[ont];
                         this.dataStores[ont].visStore.selectedConditions = state.selectedConditions[ont];
+
+                        // Values relevant for the bottom right quadrant of the app
+                        this.dataStores[ont].visStore.scaleLocked = state.scaleLocked[ont];
                     }
                 });
             }),
@@ -158,6 +173,7 @@ export class RootStore {
             // Due to MobX batching,
             importProvenance: action((json) => {
                 const session = JSON.parse(json);
+                // Initializes a new session from within our current session... and crashes React. [fixed in commit 7a18fec, more info in commit 1593a50]
                 this.init(session.sessionData.results, session.sessionData.conditions, session.sessionData.tableColumns,
                     session.sessionData.hasFC, session.sessionData.geneValues, session.sessionData.goSetSize,
                     session.sessionData.selectedMeasure, session.sessionData.pvalueFilter);
