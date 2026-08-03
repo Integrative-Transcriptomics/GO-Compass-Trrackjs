@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import Plots from "./modules/Plots";
 import Toolbar from "@material-ui/core/Toolbar";
 import AppBar from "@material-ui/core/AppBar";
@@ -16,6 +16,11 @@ import UndoIcon from "@material-ui/icons/Undo";
 import RedoIcon from "@material-ui/icons/Redo";
 import GetAppIcon from "@material-ui/icons/GetApp";
 import PublishIcon from "@material-ui/icons/Publish";
+import LinkIcon from "@material-ui/icons/Link";
+import ShareIcon from "@material-ui/icons/Share";
+
+import {Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@material-ui/core"
+
 
 const App = observer((props) => {
     const useStyles = makeStyles((theme: Theme) =>
@@ -49,6 +54,9 @@ const App = observer((props) => {
         }),
     );
     const appBar = React.createRef();
+
+    // State: Is React currently displaying the shareDialog to the user? Default: false
+    const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
     useEffect(() => {
         if (appBar.current != null && props.rootStore.initialized) {
@@ -117,16 +125,11 @@ const App = observer((props) => {
                                 GO-Compass
                             </Typography>
 
-                            <Button disabled={!props.rootStore.provenance} startIcon={<GetAppIcon style={{color: "white"}}/>}
-                                style={{color: props.rootStore.provenance ? "white" : "rgba(255, 255, 255, 0.3"}} // white if provenance data is found, otherwise grayish black
-                                onClick={() => props.rootStore.exportProvenance()}>
-                                Export
-                            </Button>
                             <Button startIcon={<PublishIcon style={{color: "white"}}/>}
                             // needed as "label" so the button can trigger the file picker
                                 style={{color: "white"}}
                                 component="label"> 
-                                Import
+                                Import Session
                                 <input type="file"
                                     style={{display: "none"}}
                                     onChange={(event) => {
@@ -138,6 +141,16 @@ const App = observer((props) => {
                                         // reset the input back to "unset" state so the next time the user picks a file, the browser registers it as a new change
                                         event.target.value = null; 
                                     }}/>
+                            </Button>
+                            <Button disabled={!props.rootStore.provenance} startIcon={<GetAppIcon style={{color: "white"}}/>}
+                                style={{color: props.rootStore.provenance ? "white" : "rgba(255, 255, 255, 0.3)"}} // white if provenance data is found, otherwise grayish black
+                                onClick={() => props.rootStore.exportProvenance()}>
+                                Export Session
+                            </Button>
+                            <Button disabled={!props.rootStore.provenance} startIcon={<LinkIcon style={{ color: "white" }} />}
+                                style={{ color: props.rootStore.provenance ? "white" : "rgba(255, 255, 255, 0.3)" }} // white if provenance data is found, otherwise grayish black
+                                onClick={() => setShareDialogOpen(true)}>
+                                Share Current State via URL
                             </Button>
                         </div>
                         {props.rootStore.initialized ?
@@ -207,6 +220,32 @@ const App = observer((props) => {
                         </IconButton>
                     </Toolbar>
                 </AppBar>
+
+                <Dialog open={shareDialogOpen} onClose={() => setShareDialogOpen(false)}>
+                    <DialogTitle>Please read carefully</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            Pressing "Copy Link" in the bottom right corner of this window will encode this application's current state as a link and copy it into your computer's clipboad.
+                            <br />You can use the copied link to share GO-Compass's current state with another person.
+                            <br />This person then needs to:
+                            <ol>
+                                <li>Open up GO-Compass</li>
+                                <li>Paste this link into the URL bar of their browser</li>
+                                <li>Load <u>exactly</u> the same dataset that you saved this link with</li>
+                            </ol>
+                            Afterwards, the other person's view of GO-Compass should look exactly like yours at the time when you pressed "Copy Link".
+                            <br />As different browsers support different maximum URL lengths and GO-Compass sessions tend to get very lengthy very quickly, <b>it is recommended to use the "Export Session" button in the top left corner of GO-Compass in order to share your progress as a file instead.</b>
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => {
+                            navigator.clipboard.writeText(window.location.href);
+                            setShareDialogOpen(false);
+                        }}>Copy Link</Button>
+                        <Button onClick={() => setShareDialogOpen(false)}>Cancel</Button>
+                    </DialogActions>
+                </Dialog>
+
             </React.Fragment>
             {/* Whenever the sessionID in RootStore changes, React treats the fragement down below and everything inside of it as a brand new element.
                 This allows us to avoid the https://github.com/mobxjs/mobx-react#the-set-of-provided-stores-has-changed-error issue [link isn't very helpful at all],

@@ -98,6 +98,9 @@ export class RootStore {
                         this.restoreStatesPerOntology(state);
                     }
                 }));
+                // provenance needs to have been built before provenance.apply(...) can be used due how its implemented in ProvenanceCreator.ts
+                this.provenance.done();
+                this.syncStateFromProvenance(this.provenance.state);
             }),
 
             // Seed/populate per-ontology maps for all values that we want to track via our provenance graph
@@ -141,6 +144,7 @@ export class RootStore {
                     if (this.dataStores[ont]) {
                         // Values relevant for the top left quadrant of the app
                         this.dataStores[ont].filterCutoff = state.filterCutoff[ont];
+                        this.dataStores[ont].recalculateFiltering(state.filterCutoff[ont]); // Occasionally, filter did not correctly get recalculated upon state restoration. This fixes it
                         this.dataStores[ont].clusterCutoff = state.clusterCutoff[ont];
 
                         // Values relevant for the top right quadrant of the app
@@ -155,6 +159,14 @@ export class RootStore {
                         this.dataStores[ont].visStore.scaleLocked = state.scaleLocked[ont];
                     }
                 });
+            }),
+
+            // Sync the state of the current provenance. Required for Trrack's URL sharing feature.
+            // TODO: Write better description
+            syncStateFromProvenance: action((state) => {
+                this.ontology = state.ontology;
+                this.sigThreshold = state.sigThreshold;
+                this.restoreStatesPerOntology(state);
             }),
 
             // Setter functionality (by Theresa) & tracking functionality (by Mathias) for ontology selection context menu

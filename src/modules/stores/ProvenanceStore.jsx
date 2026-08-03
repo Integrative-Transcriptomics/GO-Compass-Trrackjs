@@ -8,16 +8,16 @@ import {initProvenance, createAction} from "@visdesignlab/trrack";
 
 /* 
 * Provenance graph building function. Gets imported by RootStore.jsx, which seeds it with values contained within the RootStore instance
-* Object spread ("...") copies every key-value pair from the initialPerOntologyState object directly into the plain initial-state object (filterCutoff, clusterCutoff ... etc.)
-* This object then gets passed to Trrack's initProvenance(...), which then builds the actual provenance object 
+* Spread syntax/object spread ("...") copies every key-value pair from the initialPerOntologyState object directly into the plain initial-state object (filterCutoff, clusterCutoff ... etc.)
+* This object then gets passed to Trrack's initProvenance(...), which then builds the actual provenance object
 */
 export function createGoCompassProvenance(initialOntology, initialSignificanceThreshold, initialPerOntologyState) {
     const provenance = initProvenance({
         ontology: initialOntology,
         sigThreshold: initialSignificanceThreshold,
-        ...initialPerOntologyState, 
-    });
-    provenance.done(); // provenance needs to have been built before provenance.apply(...) can be used due how its implemented in ProvenanceCreator.ts
+        ...initialPerOntologyState,
+    }, { loadFromUrl: true });
+    // provenance.done(); (not possible when loading from URL)
     return provenance;
 }
 
@@ -58,15 +58,17 @@ export const setSigThresholdAction = createAction((state, sigThreshold) => {
     state.sigThreshold = sigThreshold;
 }).setLabel("Set Significance Threshold");
 
+
 // ONTOLOGY-DEPENDENT ACTIONS (UNDERLYING VALUES ARE DIRECTLY RELIANT ON A GIVEN ONTOLOGY)
+
 // Provenance action for the filter cutoff slider. The slider gets "committed" once a full slider movement is completed by the user
-// ALTERNATE OPTION: Trrack slider on _every_ intermediate drag position (will likely create an enormous amount of additional Trrack states)
+// POSSIBLE ALTERNATE OPTION: Trrack slider on _every_ intermediate drag position (will likely create an enormous amount of additional Trrack states)
 export const setFilterCutoffAction = createAction((state, {ontology, cutoff}) => {
     state.filterCutoff[ontology] = cutoff;
 }).setLabel("Set Filter Cutoff");
 
 // Provenance action for the cluster cutoff slider. The slider gets "committed" once a full slider movement is completed by the user
-// ALTERNATE OPTION: Trrack slider on _every_ intermediate drag position (will likely create an enormous amount of additional Trrack states)
+// POSSIBLE ALTERNATE OPTION: Trrack slider on _every_ intermediate drag position (will likely create an enormous amount of additional Trrack states)
 export const setClusterCutoffAction = createAction((state, {ontology, cutoff}) => {
     state.clusterCutoff[ontology] = cutoff;
 }).setLabel("Set Cluster Cutoff");
@@ -84,7 +86,7 @@ export const setResultsTabAction = createAction((state, {ontology, tab}) => {
 }).setLabel("Set Results Tab");
 
 // Provenance action for locking/unlocking a set-selection in the Significant GO-Terms tab
-// Hover-driven highlighting is intentionally NOT tracked here [this action simply happens way too often]
+// Hover-driven highlighting is intentionally NOT tracked here. This would simply give us too many intermediate values to take care off and noticeably slow down GO-Compass
 // Only deliberate click-to-lock / clear-selection actions are tracked
 export const setLockedSelectionAction = createAction((state, {ontology, selectionLocked, selectedConditions}) => {
     state.selectionLocked[ontology] = selectionLocked;
