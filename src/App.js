@@ -19,7 +19,7 @@ import PublishIcon from "@material-ui/icons/Publish";
 import LinkIcon from "@material-ui/icons/Link";
 import ShareIcon from "@material-ui/icons/Share";
 
-import {Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@material-ui/core"
+import {Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Link} from "@material-ui/core"
 
 
 const App = observer((props) => {
@@ -114,17 +114,17 @@ const App = observer((props) => {
         }
     });
     return (
-        // New div so Typography and Buttons can inherit styles from it
         // Trrack'd Title Bar Start
         <div className={classes.root}>
             <React.Fragment>
                 <AppBar ref={appBar} position="sticky" style={{backgroundColor: "#a51e37"}}>
                     <Toolbar>
                         <div className={classes.title} style={ {display: "flex", alignItems: "center"} }>
-                            <Typography variant="h6">
+                            <Link component="button" variant="h6" onClick={() => props.rootStore.goBackToUpload()}
+                                style={{ textDecoration: "none", color: "white" }}>
                                 GO-Compass
-                            </Typography>
-
+                            </Link>
+                            <div style={{width: 20}} />
                             <Button startIcon={<PublishIcon style={{color: "white"}}/>}
                             // needed as "label" so the button can trigger the file picker
                                 style={{color: "white"}}
@@ -143,25 +143,25 @@ const App = observer((props) => {
                                     }}/>
                             </Button>
                             <Button disabled={!props.rootStore.provenance} startIcon={<GetAppIcon style={{color: "white"}}/>}
-                                style={{color: props.rootStore.provenance ? "white" : "rgba(255, 255, 255, 0.3)"}} // white if provenance data is found, otherwise grayish black
+                                style={{color: props.rootStore.provenance ? "white" : "rgba(255, 255, 255, 0.3)"}} // white if provenance data is found, otherwise gray
                                 onClick={() => props.rootStore.exportProvenance()}>
                                 Export Session
                             </Button>
                             <Button disabled={!props.rootStore.provenance} startIcon={<LinkIcon style={{ color: "white" }} />}
-                                style={{ color: props.rootStore.provenance ? "white" : "rgba(255, 255, 255, 0.3)" }} // white if provenance data is found, otherwise grayish black
+                                style={{ color: props.rootStore.provenance ? "white" : "rgba(255, 255, 255, 0.3)" }} // white if provenance data is found, otherwise gray
                                 onClick={() => setShareDialogOpen(true)}>
                                 Share Current State via URL
                             </Button>
                         </div>
                         {props.rootStore.initialized ?
-                            // Trrack'd Title Bar End
-                            // Trrack Provenance-related Actions Start
+            // Trrack'd Title Bar End
+                // Trrack Provenance-related Actions Start
                             // Disable Undo button when provenance is not available or when we're already sitting at the root node [strict equality might not be necessary]
                             [<Button key={"undo"} disabled={!props.rootStore.provenance || props.rootStore.provenance.current.id === props.rootStore.provenance.root.id}
                                 style={{ color: (!props.rootStore.provenance || props.rootStore.provenance.current.id === props.rootStore.provenance.root.id) ? "rgba(255, 255, 255, 0.3)" : "white" }}
                                 onClick={() => props.rootStore.provenance.undo()}>
                                 <span style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                                    <UndoIcon style={{ color: (!props.rootStore.provenance || props.rootStore.provenance.current.id === props.rootStore.provenance.root.id) ? "rgba(255, 255, 255, 0.3)" : "white" }}/>
+                                    <UndoIcon style={{ color: (!props.rootStore.provenance || props.rootStore.provenance.current.id === props.rootStore.provenance.root.id) ? "rgba(255, 255, 255, 0.3)" : "white" }} />
                                     <span style={{ fontSize: "0.65rem" }}>CTRL+Z</span>
                                 </span>
                             </Button>,
@@ -170,7 +170,7 @@ const App = observer((props) => {
                                     style={{ color: (!props.rootStore.provenance || props.rootStore.provenance.current.children.length === 0) ? "rgba(255, 255, 255, 0.3)" : "white" }}
                                     onClick={() => props.rootStore.provenance.redo()}>
                                     <span style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                                        <RedoIcon style={{ color: (!props.rootStore.provenance || props.rootStore.provenance.current.children.length === 0) ? "rgba(255, 255, 255, 0.3)" : "white" }}/>
+                                        <RedoIcon style={{ color: (!props.rootStore.provenance || props.rootStore.provenance.current.children.length === 0) ? "rgba(255, 255, 255, 0.3)" : "white" }} />
                                         <span style={{ fontSize: "0.65rem" }}>CTRL+Y</span>
                                     </span>
                                 </Button>,
@@ -234,7 +234,7 @@ const App = observer((props) => {
                                 <li>Load <u>exactly</u> the same dataset that you saved this link with</li>
                             </ol>
                             Afterwards, the other person's view of GO-Compass should look exactly like yours at the time when you pressed "Copy Link".
-                            <br />As different browsers support different maximum URL lengths and GO-Compass sessions tend to get very lengthy very quickly, <b>it is recommended to use the "Export Session" button in the top left corner of GO-Compass in order to share your progress as a file instead.</b>
+                            <br />In order to do this, GO-Compass needs to pack a lot information into a single string of characters. As different browsers support different maximum URL lengths, <b>it is recommended to use the "Export Session" button in the top left corner of GO-Compass in order to share your progress as a file instead.</b>
                         </DialogContentText>
                     </DialogContent>
                     <DialogActions>

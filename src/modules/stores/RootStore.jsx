@@ -200,6 +200,12 @@ export class RootStore {
                 this.sigThreshold = state.sigThreshold;
                 this.restoreStatesPerOntology(state);
             }),
+
+            // Un-initialize GO-Compass & null its provenance, thereby bringing the user back to the landing page / data upload part
+            goBackToUpload: action(() => {
+                this.initialized = false;
+                this.provenance = null;
+            })
         });
         // TRRACK COMPONENT FOR MobX extendObservable END
     }
