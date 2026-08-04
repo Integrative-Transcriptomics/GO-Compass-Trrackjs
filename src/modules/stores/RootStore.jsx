@@ -205,6 +205,8 @@ export class RootStore {
             goBackToUpload: action(() => {
                 this.initialized = false;
                 this.provenance = null;
+                // If this GO-Compass session utilizes URL sharing, we need to strip the ?provState= parameter
+                window.history.replaceState({}, '', window.location.pathname);
             })
         });
         // TRRACK COMPONENT FOR MobX extendObservable END
@@ -244,5 +246,6 @@ export class RootStore {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        URL.revokeObjectURL(url);
     }
 }
