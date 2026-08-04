@@ -165,7 +165,7 @@ const SelectData = (props) => {
                     </Typography>
                     <ol>
                         <li> (Optional) For gene list input: GO-enrichment for each list of genes to obtain lists of
-                            GO temrs
+                            GO terms
                         </li>
                         <li>Dispensability clustering: Adapted version of the REVIGO algorithm, a summarization
                             method based on semantic similarity
@@ -173,7 +173,7 @@ const SelectData = (props) => {
                         </li>
                         <li>Interactive comparison: GO-Compass offers several visualizations for the comparison and
                             improved
-                            interpretability of GO terms lists. The hierarchical dispensability clustering is
+                            interpretability of GO term lists. The hierarchical dispensability clustering is
                             visualized as
                             a tree, where users can interactively filter out dispensable GO terms and create flat
                             clusters.
