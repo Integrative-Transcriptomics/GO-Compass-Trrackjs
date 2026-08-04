@@ -8,14 +8,14 @@ import {initProvenance, createAction} from "@visdesignlab/trrack";
 
 /* 
 * Provenance graph building function. Gets imported by RootStore.jsx, which seeds it with values contained within the RootStore instance
-* Spread syntax/object spread ("...") copies every key-value pair from the initialPerOntologyState object directly into the plain initial-state object (filterCutoff, clusterCutoff ... etc.)
+* Spread syntax/object spread ("...") copies every key-value pair from the initialOntologyDependentStates object directly into the plain initial-state object (filterCutoff, clusterCutoff ... etc.)
 * This object then gets passed to Trrack's initProvenance(...), which then builds the actual provenance object
 */
-export function createGoCompassProvenance(initialOntology, initialSignificanceThreshold, initialPerOntologyState) {
+export function createGoCompassProvenance(initialOntology, initialSignificanceThreshold, initialOntologyDependentStates) {
     const provenance = initProvenance({
         ontology: initialOntology,
         sigThreshold: initialSignificanceThreshold,
-        ...initialPerOntologyState,
+        ...initialOntologyDependentStates,
     }, { loadFromUrl: true });
     // provenance.done(); (not possible when loading from URL)
     return provenance;
@@ -48,8 +48,8 @@ export function createGoCompassProvenance(initialOntology, initialSignificanceTh
 // Ontologies serve as pseudo-roots [these nodes can still be child nodes themselves, I really need to find a better term...]
 // Provenance action for ontology selector context menu
 export const setOntologyAction = createAction((state, ontology) => {
-    state.ontology = ontology;
-}).setLabel("Set Ontology"); // .setLabel("<LABEL>") is a fall back case if this.provenance.apply in the respective Store class (e.g. RootStore) doesn't provide a clear label
+    state.ontology = ontology; // BP, MF, CC
+}).setLabel("Set Ontology");
 
 // ONTOLOGY-INDEPENDENT ACTIONS (UNDERLYING VALUE IS SHARED ACROSS ALL ONTOLOGIES)
 // Provenance action for significance threshold context menu

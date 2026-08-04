@@ -98,7 +98,7 @@ export class RootStore {
                         this.restoreStatesPerOntology(state);
                     }
                 }));
-                // provenance needs to have been built before provenance.apply(...) can be used due how its implemented in ProvenanceCreator.ts
+                // Inform Trrack that our provenance has been initialized. This now allows us to .apply() actions to it
                 this.provenance.done();
                 this.syncStateFromProvenance(this.provenance.state);
             }),
