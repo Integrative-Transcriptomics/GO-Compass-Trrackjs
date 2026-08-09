@@ -3,8 +3,8 @@ import {action, extendObservable} from "mobx";
 
 // Import Trrack functionality from ProvenanceStore.jsx
 //import * as ProvenanceStore from "./ProvenanceStore"
-import {createGoCompassProvenance, setOntologyAction, setSigThresholdAction, setFilterCutoffAction, setClusterCutoffAction, setResultsTabAction} from "./ProvenanceStore";
-// do we need setFilterCutoffAction, setClusterCutoffAction, setResultsTabAction here?
+import {createGoCompassProvenance, setOntologyAction, setSigThresholdAction, setFilterCutoffAction, setClusterCutoffAction, setOverviewListComparisonTabAction} from "./ProvenanceStore";
+// do we need setFilterCutoffAction, setClusterCutoffAction, setOverviewListComparisonTabAction here?
 export class RootStore {
     constructor() {
         this.ontologies_map = {BP: "Biological process", MF: "Molecular function", CC: "Cellular component"};
@@ -64,7 +64,7 @@ export class RootStore {
 
                 // OLD, CAN PROBABLY BE DELETED
                 // Build septuple with our initial tracking values by calling seedStatesPerOntology()
-                // const { filterCutoff, clusterCutoff, conditionIndex, resultsTab, selectionLocked, selectedConditions, scaleLocked } = this.seedStatesPerOntology();
+                // const { filterCutoff, clusterCutoff, conditionIndex, overviewListComparisonTab, selectionLocked, selectedConditions, scaleLocked } = this.seedStatesPerOntology();
                 
                 /* Create Provenance and observe it globally
                 * Call createGoCompassProvenance from ProvenanceStore to build provenance out of:
@@ -77,7 +77,7 @@ export class RootStore {
                 *   conditionIndex:                         Ontology-dependent value that records which specific comparison pair (like D8vsD0, ...)
                 *                                           is currently selected/getting displayed to the user in the top right treemap panel
                 * 
-                *   resultsTab:                             Ontology-dependent value that records whether the "All GO-Terms" or "Significant GO-Terms"
+                *   overviewListComparisonTab:              Ontology-dependent value that records whether the "All GO-Terms" or "Significant GO-Terms"
                 *                                           tab is currently selected in the Overview List Comparison panel (bottom left quadrant)
                 * 
                 *   selectionLocked and selectedConditions: Ontology-dependent values that record whetehr a set/intersection selection is currently locked in the
@@ -103,10 +103,10 @@ export class RootStore {
                 this.syncStateFromProvenance(this.provenance.state);
             }),
 
-            // Seed/populate per-ontology maps for all values that we want to track via our provenance graph
-            // Technically we do not need a separate function for initial seeding, it could be done right next to this.provenance = createGoCompassProvenance(...), but in my opinion, it does improve readability
+            // Seed/populate per-ontology objects for all values that help us create Trrack's initial state
+            // Technically we do not need a separate function for initial seeding. This could be done right next to this.provenance = createGoCompassProvenance(...), but in my opinion, it does improve readability
             seedStatesPerOntology: action(() => {
-                const initialFilterCutoff = {}, initialClusterCutoff = {}, initialConditionIndex = {}, initialResultsTab = {}, initialSelectionLocked = {}, initialSelectedConditions = {}, initialScaleLocked = {};
+                const initialFilterCutoff = {}, initialClusterCutoff = {}, initialConditionIndex = {}, initialOverviewListComparisonTab = {}, initialSelectionLocked = {}, initialSelectedConditions = {}, initialScaleLocked = {};
                 // "for every ontology ID available, if said ontology ID has a DataStore instance, 
                 // read its current values and then use them to seed Trrack's initial per-ontology state"
                 Object.keys(this.dataStores).forEach(ont => {
@@ -119,7 +119,7 @@ export class RootStore {
                         initialConditionIndex[ont] = this.dataStores[ont].visStore.conditionIndex;
 
                         // Values relevant for the bottom left quadrant of the app
-                        initialResultsTab[ont] = this.dataStores[ont].visStore.resultsTab;
+                        initialOverviewListComparisonTab[ont] = this.dataStores[ont].visStore.overviewListComparisonTab;
                         initialSelectionLocked[ont] = this.dataStores[ont].visStore.selectionLocked;
                         initialSelectedConditions[ont] = this.dataStores[ont].visStore.selectedConditions;
 
@@ -130,7 +130,7 @@ export class RootStore {
                 return {
                     filterCutoff: initialFilterCutoff, clusterCutoff: initialClusterCutoff,
                     conditionIndex: initialConditionIndex,
-                    resultsTab: initialResultsTab, selectionLocked: initialSelectionLocked, selectedConditions: initialSelectedConditions,
+                    overviewListComparisonTab: initialOverviewListComparisonTab, selectionLocked: initialSelectionLocked, selectedConditions: initialSelectedConditions,
                     scaleLocked: initialScaleLocked
                 };
             }),
@@ -145,13 +145,15 @@ export class RootStore {
                         // Values relevant for the top left quadrant of the app
                         this.dataStores[ont].filterCutoff = state.filterCutoff[ont];
                         this.dataStores[ont].recalculateFiltering(state.filterCutoff[ont]); // Occasionally, filter did not correctly get recalculated upon state restoration. This fixes it
+                        this.dataStores[ont].tableStore.initTermState(Object.keys(this.dataStores[ont].filterHierarchy)); // bugfix for interaction with tableStore
+
                         this.dataStores[ont].clusterCutoff = state.clusterCutoff[ont];
 
                         // Values relevant for the top right quadrant of the app
                         this.dataStores[ont].visStore.conditionIndex = state.conditionIndex[ont];
 
                         // Values relevant for the bottom left quadrant of the app
-                        this.dataStores[ont].visStore.resultsTab = state.resultsTab[ont];
+                        this.dataStores[ont].visStore.overviewListComparisonTab = state.overviewListComparisonTab[ont];
                         this.dataStores[ont].visStore.selectionLocked = state.selectionLocked[ont];
                         this.dataStores[ont].visStore.selectedConditions = state.selectedConditions[ont];
 

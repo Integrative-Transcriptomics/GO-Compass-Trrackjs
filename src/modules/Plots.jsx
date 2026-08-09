@@ -121,22 +121,22 @@ const Plots = inject("dataStore", "visStore")(observer((props) => {
                                     Clear selection
                                 </Button> : null}
                         </ButtonGroup>
-                    <Tabs ref={tabRef} value={props.visStore.resultsTab} onChange={(e, v) => {
-                        /* replaced value={selectedTab} with value={props.visStore.resultsTab} in the line above as we need it to be MobX-trackable for undo/redo
+                    <Tabs ref={tabRef} value={props.visStore.overviewListComparisonTab} onChange={(e, v) => {
+                        /* replaced value={selectedTab} with value={props.visStore.overviewListComparisonTab} in the line above as we need it to be MobX-trackable for undo/redo
                         * onChange always calls back with (event, value)
                         * e is the raw event object that never gets used here.
-                        * v is the new tab's value that we want to set the resultsTab to */
+                        * v is the new tab's value that we want to set the overviewListComparisonTab to */
                         props.visStore.unlock();
-                        // Update tracked ResultsTab using v
-                        props.visStore.setResultsTab(v);
+                        // Update tracked Overview List Comparison Tab using v
+                        props.visStore.setOverviewListComparisonTab(v);
 
-                        // No longer needed when using props.visStore.setResultsTab(v)
+                        // No longer needed when using props.visStore.setOverviewListComparisonTab(v)
                         // setSelectedTab(v)
                     }}>
                         <Tab label="All GO-Terms"/>
                         <Tab label="Significant GO-Terms"/>
                     </Tabs>
-                    <TabPanel value={props.visStore.resultsTab} index={0}>
+                    <TabPanel value={props.visStore.overviewListComparisonTab} index={0}>
                         {props.dataStore.correlationLoaded ?
                             <CorrelationHeatmap width={props.visStore.screenWidth / 2}
                                                 height={props.visStore.plotHeight / 2 - tabHeight}
@@ -144,7 +144,7 @@ const Plots = inject("dataStore", "visStore")(observer((props) => {
                             /> : null
                         }
                     </TabPanel>
-                    <TabPanel value={props.visStore.resultsTab} index={1}>
+                    <TabPanel value={props.visStore.overviewListComparisonTab} index={1}>
                         <Provider upSetStore={props.dataStore.upSetStore}>
                             <UpSet width={props.visStore.screenWidth / 2}
                                    height={props.visStore.plotHeight / 2 - tabHeight}

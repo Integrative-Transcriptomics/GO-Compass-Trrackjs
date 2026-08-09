@@ -26,7 +26,7 @@ export function createGoCompassProvenance(initialOntology, initialSignificanceTh
 * Trrack Syntax is:
 * createAction( (<state>, <payload>) => { ... } )
 *   createAction(...) is the syntax that buiilds and returns the action creator.
-*       setOntologyAction would be an example of an action creator
+*       setOntologyAction, setSigThresholdAction, setFilterCutoffAction and the like are action creators.
 *   <state> is the first parameter and _always_ equals Trrack's currently tracked state.
 *   <payload> can be a single plain value or a tuple/triplet/... of dependent values, like {ontology, cutoff} or {ontology, selectionLocked, selectedConditions}
 *   => { ... } describes the reducer function which contains the actual function logic.
@@ -81,20 +81,20 @@ export const setConditiionIndexAction = createAction((state, {ontology, index}) 
 }).setLabel("Set Condition Index");
 
 // Provenance action for the "All GO-Terms" / "Significant GO-Terms" results tab that you can see in the bottom left view quadrant
-export const setResultsTabAction = createAction((state, {ontology, tab}) => {
-    state.resultsTab[ontology] = tab;
+export const setOverviewListComparisonTabAction = createAction((state, {ontology, tab}) => {
+    state.overviewListComparisonTab[ontology] = tab;
 }).setLabel("Set Results Tab");
 
 // Provenance action for locking/unlocking a set-selection in the Significant GO-Terms tab
 // Hover-driven highlighting is intentionally NOT tracked here. This would simply give us too many intermediate values to take care off and noticeably slow down GO-Compass
-// Only deliberate click-to-lock / clear-selection actions are tracked
+// We only want to track intentional click-to-lock / clear-selection-clicks from the user
 export const setLockedSelectionAction = createAction((state, {ontology, selectionLocked, selectedConditions}) => {
     state.selectionLocked[ontology] = selectionLocked;
     state.selectedConditions[ontology] = selectedConditions;
 }).setLabel("Set Locked Selection");
 
 // Provenance action for UNLOCK Y-SCALE / LOCK Y-SCALE button in the bottom right quadrant of GO-Compass
-// Todo: More technical explanation
+// TODO: More technical explanation
 export const setScaleLockedAction = createAction((state, {ontology, locked}) => {
     state.scaleLocked[ontology] = locked;
 }).setLabel("Set Y-Scale Lock");

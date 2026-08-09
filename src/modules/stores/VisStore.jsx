@@ -4,7 +4,7 @@ import {getTextWidth} from "../../UtilityFunctions";
 import traverseTree from "../ClusteredHeatmap/RFLayout";
 
 // Import Trrack functionality from ProvenanceStore.jsx
-import { setConditiionIndexAction, setResultsTabAction, setLockedSelectionAction, setScaleLockedAction } from "./ProvenanceStore";
+import { setConditiionIndexAction, setOverviewListComparisonTabAction, setLockedSelectionAction, setScaleLockedAction } from "./ProvenanceStore";
 
 /**
  * store for visualization operations
@@ -28,7 +28,7 @@ export class VisStore {
             stepsize: 10,
 
             // Extra vis-values to be observed only for Trrack
-            resultsTab: 0,      // Overview List Comparison in bottom left quadrant starts in tab 0: "All GO-Terms"
+            overviewListComparisonTab: 0,      // Overview List Comparison in bottom left quadrant starts in tab 0: "All GO-Terms"
             scaleLocked: true,  // per default, "LOCK Y-SCALE" in bottom right quadrant starts locked
 
             /**
@@ -192,15 +192,15 @@ export class VisStore {
                     this.selectedConditions = [...new Set(indices)];
                 }
             }),
-            // Provenance-enabled ResultsTab display for when the user clicks the ALL GO-Terms / Significant GO-Terms tab in Overview List Comparison (bottom left quadrant)
+            // Provenance-enabled Overview List Comparison Tab display for when the user clicks the ALL GO-Terms / Significant GO-Terms tab in Overview List Comparison (bottom left quadrant)
             // TODO: Improve explanation
-            setResultsTab: action((tab) => {
-                // Update MobX observed/observable resultsTab field in VisStore instance
-                this.resultsTab = tab;
+            setOverviewListComparisonTab: action((tab) => {
+                // Update MobX observed/observable overviewListComparisonTab field in VisStore instance
+                this.overviewListComparisonTab = tab;
                 // If provenance data is present, update the current tab inside of this provenance data based on the current ontology
                 if (this.dataStore.rootStore.provenance) {
                     this.dataStore.rootStore.provenance.apply(
-                        setResultsTabAction({ ontology: this.dataStore.ontology, tab: tab }),
+                        setOverviewListComparisonTabAction({ ontology: this.dataStore.ontology, tab: tab }),
                         // if in tab 0, display All GO-Terms, otherwise display Significant GO-Terms
                         `Set results tab to ${tab === 0 ? "All GO-Terms" : "Significant GO-Terms"} (${this.dataStore.ontology})`);
                 }
