@@ -143,11 +143,19 @@ export class RootStore {
                 Object.keys(this.dataStores).forEach(ont => {
                     if (this.dataStores[ont]) {
                         // Values relevant for the top left quadrant of the app
-                        this.dataStores[ont].filterCutoff = state.filterCutoff[ont];
-                        this.dataStores[ont].recalculateFiltering(state.filterCutoff[ont]); // Occasionally, filter did not correctly get recalculated upon state restoration. This fixes it
-                        this.dataStores[ont].tableStore.initTermState(Object.keys(this.dataStores[ont].filterHierarchy)); // bugfix for interaction with tableStore
-
                         this.dataStores[ont].clusterCutoff = state.clusterCutoff[ont];
+
+                        // Occasionally, the filterCutoff value did not correctly get recalculated upon state restoration. If it's not up-to-date, this should fix it:
+                        if (this.dataStores[ont].filterCutoff !== state.filterCutoff[ont]) {
+                            const newFilterCutoff = state.filterCutoff[ont];
+
+                            this.dataStores[ont].filterCutoff = newFilterCutoff;
+                            this.dataStores[ont].recalculateFiltering(newFilterCutoff);
+
+                            // Resync termState with filterHierarchy. MobX normally manages to sync this automatically, but sometimes it's not fast enough?
+                            // The issue only seems to happen when importing a larger session 
+                            this.dataStores[ont].tableStore.initTermState(Object.keys(this.dataStores[ont].filterHierarchy));
+                        }
 
                         // Values relevant for the top right quadrant of the app
                         this.dataStores[ont].visStore.conditionIndex = state.conditionIndex[ont];
