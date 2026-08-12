@@ -35,6 +35,7 @@ export class DataStore {
             pca: [],
             pcaLoaded: false,
             correlationLoaded: false,
+            correlationRequestID: 0,
             /**
              * flat hierarchy of cluster representatives and other GO terms
              * @returns {{}}
@@ -198,8 +199,15 @@ export class DataStore {
         reaction(
             () => this.filteredPvalues,
             () => {
+                this.correlationRequestID += 1;
+                const requestID = this.correlationRequestID;
+
                 performCorrelation(this.filteredPvalues, response => {
-                    this.correlation = response;
+                    if ( requestID === this.correlationRequestID) {
+                        this.correlation = response;
+                    } else {
+                        console.log("Dropped response (request " + requestID + ", current is " + this.correlationRequestID +")");
+                    }
                 })
             });
         // when the filter slider is moved, restructure table
@@ -226,8 +234,15 @@ export class DataStore {
         /**
          * Calculates p-value correlation
          */
+        this.correlationRequestID += 1;
+        const requestID = this.correlationRequestID;
+
         performCorrelation(this.filteredPvalues, response => {
-            this.correlation = response;
+            if ( requestID === this.correlationRequestID) {
+                this.correlation = response;
+            } else {
+                console.log("Dropped response (request " + requestID + ", current is " + this.correlationRequestID +")");
+            }
             this.correlationLoaded = true;
         });
         this.tableStore.initTermState(Object.keys(this.filterHierarchy));
