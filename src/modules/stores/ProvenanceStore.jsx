@@ -98,3 +98,14 @@ export const setLockedSelectionAction = createAction((state, {ontology, selectio
 export const setScaleLockedAction = createAction((state, {ontology, locked}) => {
     state.scaleLocked[ontology] = locked;
 }).setLabel("Set Y-Scale Lock");
+
+// Provenance action for sorting mode chosen by user in the bottom table (sort by termID, description, frequency, uniqueness...)
+export const setTableSortAction = createAction((state, {ontology, sortKey, sortDir}) => {
+    state.sortKey[ontology] = sortKey;
+    state.sortDir[ontology] = sortDir;
+}).setLabel("Set Table Sorting Mode");
+
+// Provenance action for expand/colappse all button in the bottom table
+export const setTableGlobalOpenAction = createAction((state, {ontology, globalOpen}) => {
+    state.globalOpen[ontology] = globalOpen;
+}).setLabel("Set Table Expand/Collapse Status");

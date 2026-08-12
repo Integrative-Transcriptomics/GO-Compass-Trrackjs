@@ -17,7 +17,7 @@ export class DataStore {
         this.ontology = ontology;
 
         this.rootStore = rootStore;
-        this.tableStore = new TableStore(dataTable, conditions, tableColumns);
+        this.tableStore = new TableStore(this, dataTable, conditions, tableColumns);
         this.visStore = new VisStore(this);
         this.upSetStore = new UpSetStore(this, this.visStore)
         this.tableColumns = tableColumns;

@@ -84,6 +84,10 @@ export class RootStore {
                 *                                           UpSet plot and which conditions it contains (Significant GO-Terms tab, bottom left quadrant)
                 *
                 *   scaleLocked:                            Ontology-dependent value that ... TODO
+                * 
+                *   setTableSortAction                      TODO
+                * 
+                *   setTableGlobalOpenAction                TODO
                 */
                 this.provenance = createGoCompassProvenance(this.ontology, this.sigThreshold, this.seedStatesPerOntology());
                 // Replay into RootStore only on undo/redo/ [goToNode later if we start doing graph stuff}
@@ -106,7 +110,8 @@ export class RootStore {
             // Seed/populate per-ontology objects for all values that help us create Trrack's initial state
             // Technically we do not need a separate function for initial seeding. This could be done right next to this.provenance = createGoCompassProvenance(...), but in my opinion, it does improve readability
             seedStatesPerOntology: action(() => {
-                const initialFilterCutoff = {}, initialClusterCutoff = {}, initialConditionIndex = {}, initialOverviewListComparisonTab = {}, initialSelectionLocked = {}, initialSelectedConditions = {}, initialScaleLocked = {};
+                const initialFilterCutoff = {}, initialClusterCutoff = {}, initialConditionIndex = {}, initialOverviewListComparisonTab = {}, initialSelectionLocked = {}, 
+                initialSelectedConditions = {}, initialScaleLocked = {}, initialTableGlobalOpen = {}, initialTableSortKey = {}, initialTableSortDir = {};
                 // "for every ontology ID available, if said ontology ID has a DataStore instance, 
                 // read its current values and then use them to seed Trrack's initial per-ontology state"
                 Object.keys(this.dataStores).forEach(ont => {
@@ -125,13 +130,19 @@ export class RootStore {
 
                         // Values relevant for the bottom right quadrant of the app
                         initialScaleLocked[ont] = this.dataStores[ont].visStore.scaleLocked;
+
+                        // Values for the table at the very bottom of the app
+                        initialTableGlobalOpen[ont] = this.dataStores[ont].tableStore.globalOpen;
+                        initialTableSortKey[ont] = this.dataStores[ont].tableStore.sortKey;
+                        initialTableSortDir[ont] = this.dataStores[ont].tableStore.sortDir;
                     }
                 });
                 return {
                     filterCutoff: initialFilterCutoff, clusterCutoff: initialClusterCutoff,
                     conditionIndex: initialConditionIndex,
                     overviewListComparisonTab: initialOverviewListComparisonTab, selectionLocked: initialSelectionLocked, selectedConditions: initialSelectedConditions,
-                    scaleLocked: initialScaleLocked
+                    scaleLocked: initialScaleLocked,
+                    globalOpen: initialTableGlobalOpen, sortKey: initialTableSortKey, sortDir: initialTableSortDir
                 };
             }),
 
@@ -167,6 +178,11 @@ export class RootStore {
 
                         // Values relevant for the bottom right quadrant of the app
                         this.dataStores[ont].visStore.scaleLocked = state.scaleLocked[ont];
+
+                        // Values for the table at the very bottom of the app
+                        this.dataStores[ont].tableStore.globalOpen = state.globalOpen[ont];
+                        this.dataStores[ont].tableStore.sortKey = state.sortKey[ont];
+                        this.dataStores[ont].tableStore.sortDir =state.sortDir[ont];
                     }
                 });
             }),

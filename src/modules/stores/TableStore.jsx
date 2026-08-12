@@ -1,10 +1,14 @@
 import {action, extendObservable} from "mobx";
 
+// Import Trrack functionality from ProvenanceStore.jsx
+import { setTableSortAction, setTableGlobalOpenAction } from "./ProvenanceStore";
+
 /**
  * store for results table
  */
 export class TableStore {
-    constructor(dataTable, conditions, tableColumns) {
+    constructor(dataStore, dataTable, conditions, tableColumns) {
+        this.dataStore = dataStore;
         this.tableColumns = tableColumns;
         this.mapper = {};
         Object.keys(dataTable).forEach(goTerm => {
@@ -61,30 +65,61 @@ export class TableStore {
                 } else {
                     this.setGlobalOpen("open");
                 }
+
+                if (this.dataStore.rootStore.provenance) {
+                    this.dataStore.rootStore.provenance.apply(
+                        setTableGlobalOpenAction({
+                            ontology: this.dataStore.ontology,
+                            globalOpen: this.globalOpen
+                        }),
+                        `Set globalOpen to ${this.globalOpen} (${this.dataStore.ontology})`);
+                }
             }),
             toggleOpen: action((goTerm) => {
                 let open2Copy = this.termState.slice();
                 const goTermIndex = open2Copy.map(d => d.goTerm).indexOf(goTerm);
                 open2Copy[goTermIndex].open = !open2Copy[goTermIndex].open;
                 this.setTermOrder(open2Copy);
-                if (this.globalOpen !== "any") {
-                    this.setGlobalOpen("any");
-                }
+                // Open/collapse state is now handled by Trrack
+                // if (this.globalOpen !== "any") {
+                //     this.setGlobalOpen("any");
+                // }
             }),
-            sort: action((key) => {
+            // This is the sorting logic previously found in sort: action((key) => { ... } extracted into its own helper method.
+            // Due to the new tracking and syncing functionality, we need to re-apply its sorting algorithm multiple times now. Thus, it's handier as its own method
+            sortHelper: action((key, dir) => {
                 let elements = this.termState.slice();
-                let dir = this.sortKey === key && this.sortDir === 'desc' ? 1 : -1;
+                let comparisonDir = dir === 'desc' ? -1 : 1;
                 elements.sort((a, b) => {
                     if (this.mapper[a.goTerm][key] < this.mapper[b.goTerm][key]) {
-                        return -dir;
-                    } else if (this.mapper[a.goTerm][key] > this.mapper[b.goTerm][key]) {
-                        return dir;
-                    } else return 0;
+                        return -comparisonDir;
+                    }
+                    else if (this.mapper[a.goTerm][key] > this.mapper[b.goTerm][key]) {
+                        return comparisonDir;
+                    }
+                    else return 0;
                 });
-                this.setSortDir(this.sortKey === key && this.sortDir === 'desc' ? 'asc' : 'desc');
                 this.setTermOrder(elements);
-                this.setSortKey(key);
             }),
+            sort: action((key) => {
+                let dir = this.sortKey === key && this.sortDir === 'desc' ? 'asc' : 'desc';
+                this.sortHelper(key, dir);
+                this.setSortDir(dir);
+                // TermOrder is now handled by sortHelper
+                // this.setTermOrder(elements);
+                this.setSortKey(key);
+
+                if (this.dataStore.rootStore.provenance) {
+                    this.dataStore.rootStore.provenance.apply(
+                        setTableSortAction({
+                            ontology: this.dataStore.ontology,
+                            sortKey: key,
+                            sortDir: dir
+                        }),
+                        `Set sortKey to ${key}, sortDir to ${dir} (${this.dataStore.ontology})`);
+                }
+            }),
+
         })
     }
 
