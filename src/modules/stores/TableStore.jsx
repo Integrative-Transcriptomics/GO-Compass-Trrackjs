@@ -80,13 +80,13 @@ export class TableStore {
                 const goTermIndex = open2Copy.map(d => d.goTerm).indexOf(goTerm);
                 open2Copy[goTermIndex].open = !open2Copy[goTermIndex].open;
                 this.setTermOrder(open2Copy);
-                // Open/collapse state is now handled by Trrack
+                // Open/collapse state is now fully handled by Trrack
                 // if (this.globalOpen !== "any") {
                 //     this.setGlobalOpen("any");
                 // }
             }),
             // This is the sorting logic previously found in sort: action((key) => { ... } extracted into its own helper method.
-            // Due to the new tracking and syncing functionality, we need to re-apply its sorting algorithm multiple times now. Thus, it's handier as its own method
+            // Due to the new tracking and syncing functionality, we need to re-apply its sorting algorithm multiple times (e.g. in RootStore's restoreStatesPerOntology)
             sortHelper: action((key, dir) => {
                 let elements = this.termState.slice();
                 let comparisonDir = dir === 'desc' ? -1 : 1;

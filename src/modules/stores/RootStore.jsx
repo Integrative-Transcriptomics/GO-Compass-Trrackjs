@@ -183,6 +183,11 @@ export class RootStore {
                         this.dataStores[ont].tableStore.globalOpen = state.globalOpen[ont];
                         this.dataStores[ont].tableStore.sortKey = state.sortKey[ont];
                         this.dataStores[ont].tableStore.sortDir =state.sortDir[ont];
+
+                        // If this ontology has a sortKey associated with it, make sure that the GO-TERM sorting actually gets applied
+                        if (state.sortKey[ont]) {
+                            this.dataStores[ont].tableStore.sortHelper(state.sortKey[ont], state.sortDir[ont]);
+                        }
                     }
                 });
             }),
