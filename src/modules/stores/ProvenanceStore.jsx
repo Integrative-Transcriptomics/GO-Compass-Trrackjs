@@ -105,7 +105,7 @@ export const setTableSortAction = createAction((state, {ontology, sortKey, sortD
     state.sortDir[ontology] = sortDir;
 }).setLabel("Set Table Sorting Mode");
 
-// Provenance action for expand/colappse all button in the bottom table
+// Provenance action for expand/collapse all button in the bottom table
 export const setTableGlobalOpenAction = createAction((state, {ontology, globalOpen}) => {
     state.globalOpen[ontology] = globalOpen;
 }).setLabel("Set Table Expand/Collapse Status");

@@ -11,6 +11,7 @@ import PropTypes from "prop-types";
 import HelpIcon from '@material-ui/icons/Help';
 import HomeIcon from '@material-ui/icons/Home';
 import GitHubIcon from '@material-ui/icons/GitHub';
+import RefreshIcon from '@material-ui/icons/Refresh';
 import {
     Backdrop,
     Button,
@@ -200,6 +201,10 @@ const SelectData = (props) => {
                     >
                         here
                     </Link> </Alert>
+                    <div style={ {height: 10} } />
+                    <Alert severity={"warning"}>Some browsers do not fully reset GO-Compass when reloading the webpage via <RefreshIcon fontSize="small" style={{verticalAlign: "middle"}}/> or by pressing F5.
+                    <br />You can simply click on the GO-Compass text in the top left corner to reset the app instead.
+                    </Alert>
 
                 </Container>
             </div>
