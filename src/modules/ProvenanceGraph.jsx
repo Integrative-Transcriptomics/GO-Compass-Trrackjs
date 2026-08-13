@@ -8,21 +8,22 @@ import "semantic-ui-css/semantic.min.css";
 // main trrack-vis visualization component
 import { ProvVisCreator } from "@visdesignlab/trrack-vis";
 
+// Provenance graph that re-renders via useEffect when MobX-observed provenance data changes elsewhere in GO-Compass
 const ProvenanceGraph = observer((props) => {
 
     // initialize empty references for ProvVisCreator
     const containerReference = useRef(null);
 
     useEffect(() => {
-        // check if provenance information is actually present AND if the drawer on right is open AND if there's an actual DOM element we can draw into (onto?)
+        // check if provenance information is actually present AND if the drawer on the right is open AND if there's an actual DOM element we can draw into (onto?)
         if (props.rootStore.provenance && props.open && containerReference.current) {
 
-            // empty out provenance graph graph before execution
+            // empty out provenance graph before execution
             containerReference.current.innerHTML = "";
             const {width, height} = containerReference.current.getBoundingClientRect();
 
             ProvVisCreator(
-                // DOM element to drawn graph into
+                // DOM element to draw graph into
                 containerReference.current,
 
                 // The Provenance data that we want to render, taken directly from RootStore
@@ -34,7 +35,7 @@ const ProvenanceGraph = observer((props) => {
                 // buttons: Allows us to select whether the provenance graph is displayed with its own undo/redo buttons. Setting it to false does nothing?
                 true,
 
-                // ephemeralUndo: all tracked actions GO-Compass performs are inherently meaningful, they do not need to be ephemeral
+                // ephemeralUndo: All tracked actions GO-Compass performs are inherently meaningful, there is no need for ephemeral nodes invisible to the user
                 false,
 
                 // fauxRoot: GO-Compass currently does not use faux roots ("pseudo roots"), we always render the graph starting at the real root
@@ -49,7 +50,7 @@ const ProvenanceGraph = observer((props) => {
         }
     }, [props.open, props.rootStore.provenance] );
 
-    // TODO: Overwrite horizontal scroll bar at the bottom of the drawer so last node is selectable even if graph is long
+    // TODO: Overwrite horizontal scroll bar at the bottom of the drawer so last node is selectable even if graph is long [not sure if actually a good idea?]
     return <div ref={containerReference} style={ { width: "100%", height: "100%" } } />;
 });
 
