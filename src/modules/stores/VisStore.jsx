@@ -169,12 +169,13 @@ export class VisStore {
                 const newIndices=[...new Set(indices)];
                 if(this.selectionLocked) {
                     if (newIndices.toString() === this.selectedConditions.toString()) {
-                        this.selectionLocked=false
+                        this.selectionLocked = false;
                     } else {
-                        this.selectedConditions = newIndices
+                        this.selectedConditions = newIndices;
                     }
                 } else {
-                    this.selectionLocked=true
+                    this.selectionLocked = true;
+                    this.selectedConditions = newIndices;
                 }
                 // New case for provenance handling: If provenance data is present, apply setLockedSelectionAction to the provenance data as well
                 if (this.dataStore.rootStore.provenance) {
