@@ -18,8 +18,13 @@ import GetAppIcon from "@material-ui/icons/GetApp";
 import PublishIcon from "@material-ui/icons/Publish";
 import LinkIcon from "@material-ui/icons/Link";
 import ShareIcon from "@material-ui/icons/Share";
-
 import {Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Link} from "@material-ui/core"
+
+// Provenance Graph Rendering
+import AccountTreeIcon from "@material-ui/icons/AccountTree";
+import History from "@material-ui/icons/History";
+import {Drawer} from "@material-ui/core";
+import ProvenanceGraph from "./modules/ProvenanceGraph";
 
 
 const App = observer((props) => {
@@ -55,8 +60,11 @@ const App = observer((props) => {
     );
     const appBar = React.createRef();
 
-    // State: Is React currently displaying the shareDialog to the user? Default: false
+    // Is React currently displaying the shareDialog to the user? Default: false
     const [shareDialogOpen, setShareDialogOpen] = useState(false);
+
+    // Is the Provenance Graph currently being displayed to the user? Default: false
+    const [provenanceGraphOpen, setProvenanceGraphOpen] = useState(false);
 
     useEffect(() => {
         if (appBar.current != null && props.rootStore.initialized) {
@@ -133,7 +141,7 @@ const App = observer((props) => {
                                 <input type="file"
                                     style={{display: "none"}}
                                     onChange={(event) => {
-                                        // change event fires when its value changes
+                                        // let the browser open a FileReader window
                                         const inputFile = event.target.files[0];
                                         const inputFileReader = new FileReader();
                                         inputFileReader.onload = () => props.rootStore.importProvenance(inputFileReader.result);
@@ -153,9 +161,10 @@ const App = observer((props) => {
                                 Share Current State via URL
                             </Button>
                         </div>
+                        <div style={ {flexGrow: 1 }} />
                         {props.rootStore.initialized ?
-            // Trrack'd Title Bar End
-                // Trrack Provenance-related Actions Start
+        // Trrack'd Title Bar End
+                            // Button in the top bar that reverses the last action perforemd by the user
                             // Disable Undo button when provenance is not available or when we're already sitting at the root node [strict equality might not be necessary]
                             [<Button key={"undo"} disabled={!props.rootStore.provenance || props.rootStore.provenance.current.id === props.rootStore.provenance.root.id}
                                 style={{ color: (!props.rootStore.provenance || props.rootStore.provenance.current.id === props.rootStore.provenance.root.id) ? "rgba(255, 255, 255, 0.3)" : "white" }}
@@ -165,6 +174,7 @@ const App = observer((props) => {
                                     <span style={{ fontSize: "0.65rem" }}>CTRL+Z</span>
                                 </span>
                             </Button>,
+                                // Button in the top bar that re-applies the last action undone by the undo button
                                 // Disable Redo button when provenance is not available or when the graph has no children [strict equality is actually necessary]
                                 <Button key={"redo"} disabled={!props.rootStore.provenance || props.rootStore.provenance.current.children.length === 0}
                                     style={{ color: (!props.rootStore.provenance || props.rootStore.provenance.current.children.length === 0) ? "rgba(255, 255, 255, 0.3)" : "white" }}
@@ -172,6 +182,15 @@ const App = observer((props) => {
                                     <span style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                                         <RedoIcon style={{ color: (!props.rootStore.provenance || props.rootStore.provenance.current.children.length === 0) ? "rgba(255, 255, 255, 0.3)" : "white" }} />
                                         <span style={{ fontSize: "0.65rem" }}>CTRL+Y</span>
+                                    </span>
+                                </Button>,
+                                // Button in the top bar that opens up a drawer on the right side of the screen that contains the provenance graph
+                                <Button key={"history"} disabled={!props.rootStore.provenance}
+                                    style={{ color: props.rootStore.provenance ? "white" : "rgba(255, 255, 255, 0.3)" }}
+                                    onClick={() => setProvenanceGraphOpen(true)}>
+                                    <span style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                                        <History style={{ color: props.rootStore.provenance ? "white" : "rgba(255, 255, 255, 0.3)" }} />
+                                        <span style={{ fontSize: "0.65rem" }}>History</span>
                                     </span>
                                 </Button>,
                             <FormControl className={classes.menuButton} key={"ont"}>
@@ -221,6 +240,8 @@ const App = observer((props) => {
                     </Toolbar>
                 </AppBar>
 
+                {/* URL SHARING INSTRUCTIONS DIALOG
+                Informs the the URL sharing features and its nuances */}
                 <Dialog open={shareDialogOpen} onClose={() => setShareDialogOpen(false)}>
                     <DialogTitle>Please read carefully</DialogTitle>
                     <DialogContent>
@@ -246,12 +267,20 @@ const App = observer((props) => {
                     </DialogActions>
                 </Dialog>
 
+                {/* PROVENANCE GRAPH DRAWER
+                Drawer that slides in from the right side of the screen when history button is pressed */}
+                <Drawer anchor="right" open={provenanceGraphOpen} onClose={() =>  setProvenanceGraphOpen(false) } >
+                    <div style={ { width: "26vw", height: "100vh", padding: 8, boxSizing: "border-box" } } > { /* 26% browser width, 100% height overflow: "auto" */}
+                        <Typography variant="h6">Provenance Graph</Typography>
+                        <ProvenanceGraph open={provenanceGraphOpen} rootStore={props.rootStore} />
+                    </div>
+                </Drawer>
+
             </React.Fragment>
             {/* Whenever the sessionID in RootStore changes, React treats the fragement down below and everything inside of it as a brand new element.
                 This allows us to avoid the https://github.com/mobxjs/mobx-react#the-set-of-provided-stores-has-changed-error issue [link isn't very helpful at all],
                 although I'm still not entirely sure about the underlying React logic here. Here are the two sources that provided me with the idea for my solution/workaround:
-                https://cmichel.io/react-fun-with-keys/, https://www.nikgraf.com/blog/using-reacts-key-attribute-to-remount-a-component
-            */}
+                https://cmichel.io/react-fun-with-keys/, https://www.nikgraf.com/blog/using-reacts-key-attribute-to-remount-a-component */}
             <React.Fragment key={props.rootStore.sessionID}>
                 {props.rootStore.initialized && views.length > 0 ? views :
                     <SelectData setRootStore={props.rootStore.init}/>}

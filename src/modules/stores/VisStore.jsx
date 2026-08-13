@@ -146,7 +146,7 @@ export class VisStore {
                             ontology: this.dataStore.ontology,
                             index: index
                         }),
-                        `Set condition index to ${index} (${this.dataStore.ontology})`);
+                         `(${this.dataStore.ontology}) ${this.dataStore.conditions[index]}`);
                 }
             }),
             setSigThreshold: action((threshold) => {
@@ -162,7 +162,7 @@ export class VisStore {
 
                 if (hadSelection && this.dataStore.rootStore.provenance) {
                     this.dataStore.rootStore.provenance.apply(
-                        setLockedSelectionAction({ontology: this.dataStore.ontology, selectionLocked: false, selectedConditions: []}), `Clear selection (${this.dataStore.ontology})`);
+                        setLockedSelectionAction({ontology: this.dataStore.ontology, selectionLocked: false, selectedConditions: []}), `(${this.dataStore.ontology}) Clear selection`);
                 }
             }),
             setLockedSelection: action((indices) => {
@@ -178,13 +178,19 @@ export class VisStore {
                 }
                 // New case for provenance handling: If provenance data is present, apply setLockedSelectionAction to the provenance data as well
                 if (this.dataStore.rootStore.provenance) {
+
+                    const selectedConditionDescriptors = [];
+                    this.selectedConditions.forEach(conditionIndex => {
+                        selectedConditionDescriptors.push(this.dataStore.conditions[conditionIndex]);
+                    });
+
                     this.dataStore.rootStore.provenance.apply(
                         setLockedSelectionAction({ // try saying setLockedSelectionAction ten times in a row
                             ontology: this.dataStore.ontology,
                             selectionLocked: this.selectionLocked,
                             selectedConditions: this.selectedConditions
                         }),
-                        `${this.selectionLocked ? "Lock" : "Unlock"} selection (${this.dataStore.ontology})`);
+                        `${this.selectionLocked ? "Lock" : "Unlock"} ${selectedConditionDescriptors.join(", ")}`);
                 }
             }),
             selectConditions: action((indices) => {
@@ -202,7 +208,7 @@ export class VisStore {
                     this.dataStore.rootStore.provenance.apply(
                         setOverviewListComparisonTabAction({ ontology: this.dataStore.ontology, tab: tab }),
                         // if in tab 0, display All GO-Terms, otherwise display Significant GO-Terms
-                        `Set results tab to ${tab === 0 ? "All GO-Terms" : "Significant GO-Terms"} (${this.dataStore.ontology})`);
+                        `${tab === 0 ? "All GO-Terms" : "Significant GO-Terms"}`);
                 }
             }),
             // Provenance-enabled (UN)LOCK Y-SCALE for when the user clicks sole button in Detailed Comparison (bottom right quadrant)
@@ -214,8 +220,7 @@ export class VisStore {
                 if (this.dataStore.rootStore.provenance) {
                     this.dataStore.rootStore.provenance.apply(
                         setScaleLockedAction({ ontology: this.dataStore.ontology, locked: locked }),
-                        // if in tab 0, display All GO-Terms, otherwise display Significant GO-Terms
-                        `${locked ? "Lock" : "Unlock"} Y-Scale (${this.dataStore.ontology})`);
+                        `DC: ${locked ? "Lock" : "Unlock"} Y-Scale`);
                 }
             })
         })

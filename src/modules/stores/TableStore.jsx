@@ -116,7 +116,7 @@ export class TableStore {
                             sortKey: key,
                             sortDir: dir
                         }),
-                        `Set sortKey to ${key}, sortDir to ${dir} (${this.dataStore.ontology})`);
+                        `sortKey: ${key}, sortDir: ${dir}`);
                 }
             }),
 

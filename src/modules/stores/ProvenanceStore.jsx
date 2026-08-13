@@ -83,7 +83,7 @@ export const setConditiionIndexAction = createAction((state, {ontology, index}) 
 // Provenance action for the "All GO-Terms" / "Significant GO-Terms" results tab that you can see in the bottom left view quadrant
 export const setOverviewListComparisonTabAction = createAction((state, {ontology, tab}) => {
     state.overviewListComparisonTab[ontology] = tab;
-}).setLabel("Set Results Tab");
+}).setLabel("Set Overview List Comparison Tab");
 
 // Provenance action for locking/unlocking a set-selection in the Significant GO-Terms tab
 // Hover-driven highlighting is intentionally NOT tracked here. This would simply give us too many intermediate values to take care off and noticeably slow down GO-Compass

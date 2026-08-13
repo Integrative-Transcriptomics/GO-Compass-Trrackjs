@@ -179,7 +179,7 @@ export class DataStore {
                 if (this.rootStore.provenance) {
                     this.rootStore.provenance.apply(
                         setFilterCutoffAction({ontology: this.ontology, cutoff: this.filterCutoff}),
-                        `Set filter cutoff to ${this.filterCutoff} (${this.ontology})`);
+                        `Filter: ${this.filterCutoff}`);
                 }
             }),
             // commits the current cluster cutoff to our provenance (called once on drag end) [could also call on intermediate sliper steps if desired by chair]
@@ -187,7 +187,7 @@ export class DataStore {
                 if (this.rootStore.provenance) {
                     this.rootStore.provenance.apply(
                         setClusterCutoffAction({ontology: this.ontology, cutoff: this.clusterCutoff}),
-                        `Set cluster cutoff to ${this.clusterCutoff} (${this.ontology})`);
+                        `Cluster: ${this.clusterCutoff}`);
                 }
             }),
             recalculateFiltering: action((cutoff) => {

@@ -203,7 +203,7 @@ const SelectData = (props) => {
                     </Link> </Alert>
                     <div style={ {height: 10} } />
                     <Alert severity={"warning"}>Some browsers do not fully reset GO-Compass when reloading the webpage via <RefreshIcon fontSize="small" style={{verticalAlign: "middle"}}/> or by pressing F5.
-                    <br />You can simply click on the GO-Compass text in the top left corner to reset the app instead.
+                    <br />You can instead simply click on the GO-Compass text in the top left corner to reset the app.
                     </Alert>
 
                 </Container>

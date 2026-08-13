@@ -204,14 +204,14 @@ export class RootStore {
             setOntology: action((ontology) => {
                 this.ontology = ontology;
                 if (this.provenance) {
-                    this.provenance.apply(setOntologyAction(ontology), `Set ontology to ${ontology}`);
+                    this.provenance.apply(setOntologyAction(ontology), `Ontology: ${ontology}`);
                 }
             }),
             // Setter functionality (by Theresa) & tracking functionality (by Mathias) for threshold selection context menu
             setSigThreshold: action((threshold) => {
                 this.sigThreshold = threshold;
                 if (this.provenance) {
-                    this.provenance.apply(setSigThresholdAction(threshold), `Set significance threshold to ${threshold}`);
+                    this.provenance.apply(setSigThresholdAction(threshold), `SigTresh: ${threshold}`);
                 }
             }),
 
