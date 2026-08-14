@@ -171,11 +171,12 @@ const App = observer((props) => {
                         <div style={ {flexGrow: 1 }} />
                         
                         <div style={ {flexGrow: 1 }} />
-                        <Typography style={{ color: "white", whiteSpace: "nowrap", textAlign: "center" }}>
-                            {props.rootStore.previousActionLabel ?  props.rootStore.previousActionLabel + " \u2192 "  : "SESSION START" + " \u2192 " }
-                            <b><u>{props.rootStore.currentActionLabel}</u></b>
-                            {props.rootStore.nextActionLabel     ?  " \u2192 " + props.rootStore.nextActionLabel      :      " \u2192 " + "END"      }
-                        </Typography>
+                        {props.rootStore.provenance ?
+                            <Typography style={{ color: "white", whiteSpace: "nowrap", textAlign: "center" }}>
+                                {props.rootStore.previousActionLabel ?  props.rootStore.previousActionLabel + " \u2192 "  : "SESSION START" + " \u2192 " }
+                                <b><u>{props.rootStore.currentActionLabel}</u></b>
+                                {props.rootStore.nextActionLabel     ?  " \u2192 " + props.rootStore.nextActionLabel      :      " \u2192 " + "END"      }
+                            </Typography> : null}
                         <div style={ {flexGrow: 1 }} />
                         
                         {props.rootStore.initialized ?
