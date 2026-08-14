@@ -29,8 +29,27 @@ export class RootStore {
             ontology: "BP",
             sigThreshold: 0.05,
             ontologies: [],
+            provenance: null,
             get logSigThreshold() {
                 return -Math.log10(this.sigThreshold);
+            },
+            get previousActionLabel() {
+                if (!this.provenance || !this.provenance.current.parent) {
+                    return null;
+                }
+                return this.provenance.graph.nodes[this.provenance.current.parent].label;
+            },
+            get currentActionLabel() {
+                if (!this.provenance) {
+                    return null;
+                }
+                return this.provenance.current.label;
+            },
+            get nextActionLabel() {
+                if (!this.provenance || this.provenance.current.children.length === 0) {
+                    return null;
+                }
+                return this.provenance.graph.nodes[this.provenance.current.children[0]].label
             },
             // init starts dormant
             init: action((results, conditions, tableColumns, hasFC, geneValues, goSetSize, selectedMeasure, pvalueFilter) => {
@@ -204,7 +223,7 @@ export class RootStore {
             setOntology: action((ontology) => {
                 this.ontology = ontology;
                 if (this.provenance) {
-                    this.provenance.apply(setOntologyAction(ontology), `Ontology: ${ontology}`);
+                    this.provenance.apply(setOntologyAction(ontology), `Ont: ${ontology}`);
                 }
             }),
             // Setter functionality (by Theresa) & tracking functionality (by Mathias) for threshold selection context menu

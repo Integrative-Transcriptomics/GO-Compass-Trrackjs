@@ -133,12 +133,9 @@ const App = observer((props) => {
                                 GO-Compass
                             </Link>
                             <div style={{width: 20}} />
-                            <Button startIcon={<PublishIcon style={{color: "white"}}/>}
-                            // needed as "label" so the button can trigger the file picker
-                                style={{color: "white"}}
-                                component="label"> 
-                                Import Session
+                            <Button component="label" style={{ color: "white" }}>
                                 <input type="file"
+                                    // needed as "label" so the button can trigger the file picker
                                     style={{display: "none"}}
                                     onChange={(event) => {
                                         // let the browser open a FileReader window
@@ -149,19 +146,38 @@ const App = observer((props) => {
                                         // reset the input back to "unset" state so the next time the user picks a file, the browser registers it as a new change
                                         event.target.value = null; 
                                     }}/>
+                                <span style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                                    <PublishIcon style={{ color: "white" }} />
+                                    <span style={{ fontSize: "0.65rem" }}>Import Session</span>
+                                </span>
                             </Button>
-                            <Button disabled={!props.rootStore.provenance} startIcon={<GetAppIcon style={{color: "white"}}/>}
+                            <Button disabled={!props.rootStore.provenance}
                                 style={{color: props.rootStore.provenance ? "white" : "rgba(255, 255, 255, 0.3)"}} // white if provenance data is found, otherwise gray
                                 onClick={() => props.rootStore.exportProvenance()}>
-                                Export Session
+                               <span style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                                    <GetAppIcon style={{ color: "white" }} />
+                                    <span style={{ fontSize: "0.65rem" }}>Export Session</span>
+                                </span>
                             </Button>
-                            <Button disabled={!props.rootStore.provenance} startIcon={<LinkIcon style={{ color: "white" }} />}
+                            <Button disabled={!props.rootStore.provenance}
                                 style={{ color: props.rootStore.provenance ? "white" : "rgba(255, 255, 255, 0.3)" }} // white if provenance data is found, otherwise gray
                                 onClick={() => setShareDialogOpen(true)}>
-                                Share Current State via URL
+                                <span style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                                    <LinkIcon style={{ color: props.rootStore.provenance ? "white" : "rgba(255, 255, 255, 0.3)" }} />
+                                    <span style={{ fontSize: "0.65rem" }}>Share State via URL</span>
+                                </span>
                             </Button>
                         </div>
                         <div style={ {flexGrow: 1 }} />
+                        
+                        <div style={ {flexGrow: 1 }} />
+                        <Typography style={{ color: "white", whiteSpace: "nowrap", textAlign: "center" }}>
+                            {props.rootStore.previousActionLabel ?  props.rootStore.previousActionLabel + " \u2192 "  : "SESSION START" + " \u2192 " }
+                            <b><u>{props.rootStore.currentActionLabel}</u></b>
+                            {props.rootStore.nextActionLabel     ?  " \u2192 " + props.rootStore.nextActionLabel      :      " \u2192 " + "END"      }
+                        </Typography>
+                        <div style={ {flexGrow: 1 }} />
+                        
                         {props.rootStore.initialized ?
         // Trrack'd Title Bar End
                             // Button in the top bar that reverses the last action perforemd by the user
@@ -241,7 +257,7 @@ const App = observer((props) => {
                 </AppBar>
 
                 {/* URL SHARING INSTRUCTIONS DIALOG
-                Informs the the URL sharing features and its nuances */}
+                A popup dialog that informs the user about the URL sharing feature and its nuances */}
                 <Dialog open={shareDialogOpen} onClose={() => setShareDialogOpen(false)}>
                     <DialogTitle>Please read carefully</DialogTitle>
                     <DialogContent>
@@ -252,7 +268,7 @@ const App = observer((props) => {
                             <ol>
                                 <li>Open up GO-Compass</li>
                                 <li>Paste this link into the URL bar of their browser</li>
-                                <li>Load <u>exactly</u> the same dataset that you saved this link with</li>
+                                <li>Load <u>exactly</u> the same dataset that you used when you generated this link</li>
                             </ol>
                             Afterwards, the other person's view of GO-Compass should look exactly like yours at the time when you pressed "Copy Link".
                             <br />In order to do this, GO-Compass needs to pack a lot information into a single string of characters. As different browsers support different maximum URL lengths, <b>it is recommended to use the "Export Session" button in the top left corner of GO-Compass in order to share your progress as a file instead.</b>
@@ -268,9 +284,9 @@ const App = observer((props) => {
                 </Dialog>
 
                 {/* PROVENANCE GRAPH DRAWER
-                Drawer that slides in from the right side of the screen when history button is pressed */}
+                Drawer that slides in from the right side of the screen when the user presses the history button in the top panel [see Button key={"history"} above] */}
                 <Drawer anchor="right" open={provenanceGraphOpen} onClose={() =>  setProvenanceGraphOpen(false) } >
-                    <div style={ { width: "26vw", height: "100vh", padding: 8, boxSizing: "border-box" } } > { /* 26% browser width, 100% height overflow: "auto" */}
+                    <div style={ { width: "26vw", height: "100vh", padding: 8, overflow: "auto", boxSizing: "border-box" } } > { /* show scrollbars if content is bigger than box */}
                         <Typography variant="h6">Provenance Graph</Typography>
                         <ProvenanceGraph open={provenanceGraphOpen} rootStore={props.rootStore} />
                     </div>
