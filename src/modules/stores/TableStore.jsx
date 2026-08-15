@@ -7,6 +7,8 @@ import { setTableSortAction, setTableGlobalOpenAction } from "./ProvenanceStore"
  * store for results table
  */
 export class TableStore {
+    // Per default, each DataStore creates its own TableStore instance (memo: RootStore creates one DataStore per ontology).
+    // We now need to provide each TableStore instance with a way to check RootStore's provenance, so it can apply its provenance-enabled actions
     constructor(dataStore, dataTable, conditions, tableColumns) {
         this.dataStore = dataStore;
         this.tableColumns = tableColumns;

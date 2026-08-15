@@ -64,7 +64,7 @@ export class RootStore {
                 this.goSetSize = goSetSize
                 Object.keys(results).forEach(ont => {
                     if (Object.keys(results[ont].tree).length !== 0) {
-                        // Needed for Trrack: pass ontology id (ont) over to DataStore:
+                        // Pass ontology id (ont) over to DataStore so its provenance-enabled actions can correctly utilize this.ontology
                         this.dataStores[ont] = new DataStore(ont, results[ont].data, results[ont].tree, conditions, tableColumns, this)
                     } else {
                         this.dataStores[ont] = null
@@ -170,7 +170,9 @@ export class RootStore {
                         // Values relevant for the top left quadrant of the app
                         this.dataStores[ont].clusterCutoff = state.clusterCutoff[ont];
 
-                        // Occasionally, the filterCutoff value did not correctly get recalculated upon state restoration. If it's not up-to-date, this should fix it:
+                        // Occasionally, the filterCutoff value did not correctly get recalculated upon state restoration. If it's not up-to-date, the code below should fix it.
+                        // Important: If we now restore filterCutoff from provenance, the client may send an HTTP POST request to the Python backend if values differ.
+                        // That means even if we're just restoring from provenance, our JS frontend is not independent from the Python backend.
                         if (this.dataStores[ont].filterCutoff !== state.filterCutoff[ont]) {
                             const newFilterCutoff = state.filterCutoff[ont];
 
@@ -178,7 +180,7 @@ export class RootStore {
                             this.dataStores[ont].recalculateFiltering(newFilterCutoff);
 
                             // Resync termState with filterHierarchy. MobX normally manages to sync this automatically, but sometimes it's not fast enough?
-                            // The issue only seems to happen when importing a larger session 
+                            // The issue only seems to happen when importing a larger session. Whatever the exact cause may be, the code below stops the issue from appearing
                             this.dataStores[ont].tableStore.initTermState(Object.keys(this.dataStores[ont].filterHierarchy));
                         }
 

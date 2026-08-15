@@ -1,15 +1,13 @@
 import {initProvenance, createAction} from "@visdesignlab/trrack";
 
-/* 
-* ProvenanceStore.jsx serves as our primary registry of provenance-enabled functions and constants.
+/* ProvenanceStore.jsx serves as our primary registry of provenance-enabled functions and constants.
 * These can be imported by other files in order to implement their respective tracking functionality.
-* This file doesn't contain any syntax (yet) that would justify .jsx usage, but every other store uses .jsx and I don't want it to look out of place.
+* This file doesn't contain any syntax (yet) that would justify .jsx usage, but every other store uses .jsx and I did not want it to look out of place.
 */
 
-/* 
-* Provenance graph building function. Gets imported by RootStore.jsx, which seeds it with values contained within the RootStore instance
+/* Provenance graph building function. Gets imported by RootStore.jsx, which seeds it with values contained within the RootStore instance
 * Spread syntax/object spread ("...") copies every key-value pair from the initialOntologyDependentStates object directly into the plain initial-state object (filterCutoff, clusterCutoff ... etc.)
-* This object then gets passed to Trrack's initProvenance(...), which then builds the actual provenance object
+* This object then gets passed to Trrack's initProvenance(...), which subsequently builds the actual provenance object
 */
 export function createGoCompassProvenance(initialOntology, initialSignificanceThreshold, initialOntologyDependentStates) {
     const provenance = initProvenance({
@@ -17,11 +15,11 @@ export function createGoCompassProvenance(initialOntology, initialSignificanceTh
         sigThreshold: initialSignificanceThreshold,
         ...initialOntologyDependentStates,
     }, { loadFromUrl: true });
-    // provenance.done(); (not possible when loading from URL)
+    // provenance.done(); (This had to removed when { loadFromUrl: true } was added. Turn it back on if you disable URL-sharing)
     return provenance;
 }
 
-/* BRIEF OVERVIEW OF TRRACK LOGIC & ACTIONS ON PROVENANCE
+/* Brief overview of Trrack logic and the actions it performs on provenance data
 *
 * Trrack Syntax is:
 * createAction( (<state>, <payload>) => { ... } )
@@ -42,16 +40,17 @@ export function createGoCompassProvenance(initialOntology, initialSignificanceTh
 *   
 *   If we perform a forward action, meaning: an action that adds a child to our provenance graph,
 *       we directly execute the action and Trrack logs it for us via the provenance graph.
-*   If we perform a backward action (like undo/redo), Trrack fetches the result and hands it back to us via callback logic
+*   If we perform a backward action (like undo/redo), Trrack fetches the result and hands it back to us via callback logic.
 */
 
-// Ontologies serve as pseudo-roots [these nodes can still be child nodes themselves, I really need to find a better term...]
 // Provenance action for ontology selector context menu
+// ontology serves as our most important global, provenance-enabled value that many of the values listed down below depend upon
 export const setOntologyAction = createAction((state, ontology) => {
     state.ontology = ontology; // BP, MF, CC
 }).setLabel("Set Ontology");
 
-// ONTOLOGY-INDEPENDENT ACTIONS (UNDERLYING VALUE IS SHARED ACROSS ALL ONTOLOGIES)
+// ONTOLOGY-INDEPENDENT (UNDERLYING VALUE IS SHARED ACROSS ALL ONTOLOGIES)
+
 // Provenance action for significance threshold context menu
 // sigThreshold is an independent value as it lives directly in RootStore.jsx and can be altered via setSigThreshold: action((threshold) => { ... })
 export const setSigThresholdAction = createAction((state, sigThreshold) => {
@@ -62,13 +61,13 @@ export const setSigThresholdAction = createAction((state, sigThreshold) => {
 // ONTOLOGY-DEPENDENT ACTIONS (UNDERLYING VALUES ARE DIRECTLY RELIANT ON A GIVEN ONTOLOGY)
 
 // Provenance action for the filter cutoff slider. The slider gets "committed" once a full slider movement is completed by the user
-// POSSIBLE ALTERNATE OPTION: Trrack slider on _every_ intermediate drag position (will likely create an enormous amount of additional Trrack states)
+// POSSIBLE ALTERNATE OPTION: Track slider on _every_ intermediate drag position (will likely create an enormous amount of additional Trrack states)
 export const setFilterCutoffAction = createAction((state, {ontology, cutoff}) => {
     state.filterCutoff[ontology] = cutoff;
 }).setLabel("Set Filter Cutoff");
 
 // Provenance action for the cluster cutoff slider. The slider gets "committed" once a full slider movement is completed by the user
-// POSSIBLE ALTERNATE OPTION: Trrack slider on _every_ intermediate drag position (will likely create an enormous amount of additional Trrack states)
+// POSSIBLE ALTERNATE OPTION: Track slider on _every_ intermediate drag position (will likely create an enormous amount of additional Trrack states)
 export const setClusterCutoffAction = createAction((state, {ontology, cutoff}) => {
     state.clusterCutoff[ontology] = cutoff;
 }).setLabel("Set Cluster Cutoff");
@@ -85,21 +84,20 @@ export const setOverviewListComparisonTabAction = createAction((state, {ontology
     state.overviewListComparisonTab[ontology] = tab;
 }).setLabel("Set Overview List Comparison Tab");
 
-// Provenance action for locking/unlocking a set-selection in the Significant GO-Terms tab
+// Provenance action for locking/unlocking a set selection in the Significant GO-Terms tab
 // Hover-driven highlighting is intentionally NOT tracked here. This would simply give us too many intermediate values to take care off and noticeably slow down GO-Compass
-// We only want to track intentional click-to-lock / clear-selection-clicks from the user
+// We only want to track click-to-lock / clear-selection click actions made by the user
 export const setLockedSelectionAction = createAction((state, {ontology, selectionLocked, selectedConditions}) => {
     state.selectionLocked[ontology] = selectionLocked;
     state.selectedConditions[ontology] = selectedConditions;
 }).setLabel("Set Locked Selection");
 
 // Provenance action for UNLOCK Y-SCALE / LOCK Y-SCALE button in the bottom right quadrant of GO-Compass
-// TODO: More technical explanation
 export const setScaleLockedAction = createAction((state, {ontology, locked}) => {
     state.scaleLocked[ontology] = locked;
 }).setLabel("Set Y-Scale Lock");
 
-// Provenance action for sorting mode chosen by user in the bottom table (sort by termID, description, frequency, uniqueness...)
+// Provenance action for column sorting mode & direction chosen by user in the bottom table (sort by termID, description, frequency, uniqueness... sort asc/desc)
 export const setTableSortAction = createAction((state, {ontology, sortKey, sortDir}) => {
     state.sortKey[ontology] = sortKey;
     state.sortDir[ontology] = sortDir;

@@ -126,19 +126,19 @@ export class UpSetStore {
                     // Find the correct combination with a set of conditions that matches the locked selection
                     for (const combination of this.upSetCombinations) {
                         // Collect this combination's own condition names, sorted in the same way as lockedConditionNames so the two lists line up correctly for position-by-position comparison
-                        const combinationConditionNames = [];
+                        const conditionNamesOfEachSetWithinThisCombination = []; // Yes, very long name. But it DIRECTLY tells you what it stores! Isn't that EXPLICIT?
                         combination.sets.forEach(set => {
-                            combinationConditionNames.push(set.name);
+                            conditionNamesOfEachSetWithinThisCombination.push(set.name);
                         });
 
-                        // Now sort the combinationConditionNames array so we can finally compare our arrays position-by-position [see code just below]
-                        combinationConditionNames.sort();
+                        // Now sort our very explicitly named array so we can finally compare our arrays position-by-position
+                        conditionNamesOfEachSetWithinThisCombination.sort();
 
                         // Check whether the two arrays contain exactly the same set of names ["is this partciular UpSet combination the exact same group of conditions the user has locked?"]
-                        let conditionNamesAreEqual = lockedConditionNames.length === combinationConditionNames.length;
+                        let conditionNamesAreEqual = lockedConditionNames.length === conditionNamesOfEachSetWithinThisCombination.length;
                         if (conditionNamesAreEqual) {
                             for (let index = 0; index < lockedConditionNames.length; index++) {
-                                if (lockedConditionNames[index] !== combinationConditionNames[index]) {
+                                if (lockedConditionNames[index] !== conditionNamesOfEachSetWithinThisCombination[index]) {
                                     conditionNamesAreEqual = false;
                                     break
                                 }
