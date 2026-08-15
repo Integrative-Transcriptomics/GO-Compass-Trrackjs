@@ -10,7 +10,7 @@ import {observer, Provider} from "mobx-react";
 import IconButton from "@material-ui/core/IconButton";
 import GitHubIcon from "@material-ui/icons/GitHub";
 
-// Additional Material UI icons
+// Additional Material UI icons for the main view
 import Button from "@material-ui/core/Button";
 import UndoIcon from "@material-ui/icons/Undo";
 import RedoIcon from "@material-ui/icons/Redo";
@@ -20,7 +20,7 @@ import LinkIcon from "@material-ui/icons/Link";
 // import ShareIcon from "@material-ui/icons/Share";
 import {Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Link} from "@material-ui/core"
 
-// Provenance Graph Rendering
+// Additional icons for the side drawer and the provenance graph rendering component
 // import AccountTreeIcon from "@material-ui/icons/AccountTree";
 import History from "@material-ui/icons/History";
 import {Drawer} from "@material-ui/core";

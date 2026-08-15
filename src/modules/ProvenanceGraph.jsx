@@ -9,7 +9,8 @@ import "semantic-ui-css/semantic.min.css";
 import { ProvVisCreator } from "@visdesignlab/trrack-vis";
 
 // Provenance graph that re-renders via useEffect when MobX-observed provenance data changes elsewhere in GO-Compass
-// Side branches of the graph will have their node labels hidden, even if there is enough screen space to display them. This is, unfortunately, a hardcoded feature.
+// Side branches of the graph will have their node labels hidden, even if there is enough screen space to display them. This is, unfortunately, a hardcoded "feature".
+// Full Documentation available here: https://vdl.sci.utah.edu/trrack/trrack-vis-docs/globals.html#provvis
 const ProvenanceGraph = observer((props) => {
 
     // initialize empty references for ProvVisCreator
@@ -34,7 +35,7 @@ const ProvenanceGraph = observer((props) => {
                 (id) => props.rootStore.provenance.goToNode(id),
 
                 // buttons: Should allow us to select if the provenance graph is displayed with its own "buttons". This may refer to undo/redo button
-                // No proper documentation, setting it to false does nothing? 
+                // The documentation seems wrong, setting this to false does nothing? 
                 true,
 
                 // ephemeralUndo: All tracked actions GO-Compass performs are inherently meaningful, there is no need for ephemeral nodes invisible to the user
@@ -46,7 +47,8 @@ const ProvenanceGraph = observer((props) => {
                 // Additional config settings
                 {
                     width, height,
-                    popupContent: (node) => node.label // hovering your mouse over a graph node displays its label
+                    popupContent: (node) => node.label, // Hovering your mouse over a graph node displays its label
+                    editAnnotations: true               // Either this does not actually make annotations editable, or I'm overlooking something...
                 }
             );
         }

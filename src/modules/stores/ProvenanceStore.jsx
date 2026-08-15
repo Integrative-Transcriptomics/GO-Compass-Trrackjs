@@ -3,6 +3,7 @@ import {initProvenance, createAction} from "@visdesignlab/trrack";
 /* ProvenanceStore.jsx serves as our primary registry of provenance-enabled functions and constants.
 * These can be imported by other files in order to implement their respective tracking functionality.
 * This file doesn't contain any syntax (yet) that would justify .jsx usage, but every other store uses .jsx and I did not want it to look out of place.
+* Consider checking out the official documentation: https://vdl.sci.utah.edu/trrack/trrack-docs/index.html
 */
 
 /* Provenance graph building function. Gets imported by RootStore.jsx, which seeds it with values contained within the RootStore instance
