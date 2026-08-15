@@ -84,21 +84,20 @@ export class UpSetStore {
                     return (combinations.filter((d, i) => !filterIndices.includes(i)))
                 },
                 /**
-                 * This is a workaround for UpSet.jsx's local (non-MobX) highlight state not staying in sync when Trrack's undo/redo restores selectionLocked/selectedConditions directly,
-                 * bypassing the onClick={handleClick} path that normally keeps that local state up to date.
-                 * Making this a MobX computed value instead means it derives its result from the tracked state on every read, instead of relying on a manual "setter" call that undo/redo has no way to reach
-                 * Practical effect: The vertical bars inside our Upset plot now get proper yellow highlighting when you press redo. :)
+                 * Fix for UpSet.jsx's local (non-MobX) highlighted state not staying in sync when Trrack's undo/redo restores selectionLocked/selectedConditions from provenance.
+                 * This MobX-observed getter gets called automatically on change. The previous approach relied on a manual setter call that wasn't always applied. 
+                 * properly when restoring data. There may be more elegant solutions than this, but it ultimately works.
+                 * Practical effect: The vertical bars inside our Upset plot now get proper yellow highlighting when the user presses redo.
                  * 
                  * Returns ISet or ISetCombination TypeScript object for the currently locked condition selection, or null if nothing is locked.
-                 * TODO: Check if there's really no better way to handle this somewhat weird case
                  * @returns {ISet|ISetCombination|null}
                  */
                 get lockedSelection() {
-                    // If the user hasn't locked a GO-TERM aka there is no selection, we have nothing to highlight
+                    // If the user hasn't locked a GO-TERM, meaning the user hasn't made a selection (yet), we have nothing to highlight
                     if (!this.visStore.selectionLocked) {
                         return null;
                     }
-                    // selectionLocked shouldn't ever be true with an empty selection, but maybe there's a case I'm overlooking so we'll catch it just in case
+                    // selectionLocked shouldn't ever be true with an empty selection, but maybe there's a case I'm overlooking, so we'll catch it just in case
                     if (this.visStore.selectedConditions.length === 0) {
                         return null;
                     }
@@ -110,12 +109,11 @@ export class UpSetStore {
                         lockedConditionNames.push(this.dataStore.conditions[conditionIndex]);
                     });
 
-                    // Sort the lockedConditionNames array so we can later compare our arrays position by position
+                    // Sort the lockedConditionNames array so we can later compare our arrays position-by-position
                     lockedConditionNames.sort();
 
-                    // A single locked condition maps to a plain set
-                    // Multiple locked conditions together map to a "combination" aka an intersection of sets
-                    // We want to search only the matching array, since sets and combinations do not share a stable id we could look up by instead
+                    // A single locked condition should map to one plain set
+                    // Multiple locked conditions together should map to a combination of sets/an intersection of sets
                     if (lockedConditionNames.length === 1) {
                         for (const set of this.upSetSets) {
                             if (set.name === lockedConditionNames[0]) { 
@@ -125,22 +123,29 @@ export class UpSetStore {
                         return null; // if no matching set is found. This shouldn't normally happen, but who knows?
                     }
 
-                    // Find the correct combination whose set of conditions matches the locked selection
+                    // Find the correct combination with a set of conditions that matches the locked selection
                     for (const combination of this.upSetCombinations) {
-                        // collect this combination's own condition names, sorted the same way as lockedConditionNames so the two lists line up for a position-by-position compare
+                        // Collect this combination's own condition names, sorted in the same way as lockedConditionNames so the two lists line up correctly for position-by-position comparison
                         const combinationConditionNames = [];
                         combination.sets.forEach(set => {
                             combinationConditionNames.push(set.name);
                         });
 
-                        // Now sort the combinationConditionNames array so we can finally compare our arrays position by position [see code just below]
+                        // Now sort the combinationConditionNames array so we can finally compare our arrays position-by-position [see code just below]
                         combinationConditionNames.sort();
 
                         // Check whether the two arrays contain exactly the same set of names ["is this partciular UpSet combination the exact same group of conditions the user has locked?"]
-                        const namesMatch = lockedConditionNames.length === combinationConditionNames.length
-                            && lockedConditionNames.every((name, index) => name === combinationConditionNames[index]);
+                        let conditionNamesAreEqual = lockedConditionNames.length === combinationConditionNames.length;
+                        if (conditionNamesAreEqual) {
+                            for (let index = 0; index < lockedConditionNames.length; index++) {
+                                if (lockedConditionNames[index] !== combinationConditionNames[index]) {
+                                    conditionNamesAreEqual = false;
+                                    break
+                                }
+                            }
+                        }
 
-                        if (namesMatch) {
+                        if (conditionNamesAreEqual) {
                             return combination;
                         }
                     }
