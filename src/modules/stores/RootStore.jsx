@@ -3,8 +3,8 @@ import {action, extendObservable} from "mobx";
 
 // Import Trrack functionality from ProvenanceStore.jsx
 //import * as ProvenanceStore from "./ProvenanceStore"
-import {createGoCompassProvenance, setOntologyAction, setSigThresholdAction, setFilterCutoffAction, setClusterCutoffAction, setOverviewListComparisonTabAction} from "./ProvenanceStore";
-// do we need setFilterCutoffAction, setClusterCutoffAction, setOverviewListComparisonTabAction here?
+import {createGoCompassProvenance, setOntologyAction, setSigThresholdAction} from "./ProvenanceStore";
+
 export class RootStore {
     constructor() {
         this.ontologies_map = {BP: "Biological process", MF: "Molecular function", CC: "Cellular component"};
@@ -80,10 +80,6 @@ export class RootStore {
                 this.conditions = conditions;
                 this.results = results;
                 this.tableColumns = tableColumns;
-
-                // OLD, CAN PROBABLY BE DELETED
-                // Build septuple with our initial tracking values by calling seedStatesPerOntology()
-                // const { filterCutoff, clusterCutoff, conditionIndex, overviewListComparisonTab, selectionLocked, selectedConditions, scaleLocked } = this.seedStatesPerOntology();
                 
                 /* Create Provenance and observe it globally
                 * Call createGoCompassProvenance from ProvenanceStore to build provenance out of:
@@ -109,19 +105,18 @@ export class RootStore {
                 *   setTableGlobalOpenAction                TODO
                 */
                 this.provenance = createGoCompassProvenance(this.ontology, this.sigThreshold, this.seedStatesPerOntology());
-                // Replay into RootStore only on undo/redo/ [goToNode later if we start doing graph stuff}
-                // NOTE: Don't use it on apply()
+                // Replay into RootStore only on undo/redo. NOTE: Don't use it on apply()
                 this.provenance.addGlobalObserver(action((graph, change) => {
-                    // This flag tells Trrack that the app state has changed (keeps it in sync with MobX)
+                    // This flag tells Trrack that the app state has changed, thereby keeping it in sync with MobX
                     if (change === "CurrentChanged") {
                         const state = this.provenance.state;
-                        //
+
                         this.ontology = state.ontology;
                         this.sigThreshold = state.sigThreshold;
                         this.restoreStatesPerOntology(state);
                     }
                 }));
-                // Inform Trrack that our provenance has been initialized. This now allows us to .apply() actions to it
+                // Inform Trrack that our provenance has been initialized, allowing Trrack to perform .apply() actions on this.provenance
                 this.provenance.done();
                 this.syncStateFromProvenance(this.provenance.state);
             }),
@@ -235,7 +230,6 @@ export class RootStore {
             }),
 
             // Import session & provenance data functionality for data previously created by exportProvenance()
-            // Due to MobX batching,
             importProvenance: action((json) => {
                 const session = JSON.parse(json);
                 // Initializes a new session from within our current session... and crashes React. [fixed in commit 7a18fec, more info in commit 1593a50]

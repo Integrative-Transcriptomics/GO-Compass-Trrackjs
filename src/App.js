@@ -17,11 +17,11 @@ import RedoIcon from "@material-ui/icons/Redo";
 import GetAppIcon from "@material-ui/icons/GetApp";
 import PublishIcon from "@material-ui/icons/Publish";
 import LinkIcon from "@material-ui/icons/Link";
-import ShareIcon from "@material-ui/icons/Share";
+// import ShareIcon from "@material-ui/icons/Share";
 import {Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Link} from "@material-ui/core"
 
 // Provenance Graph Rendering
-import AccountTreeIcon from "@material-ui/icons/AccountTree";
+// import AccountTreeIcon from "@material-ui/icons/AccountTree";
 import History from "@material-ui/icons/History";
 import {Drawer} from "@material-ui/core";
 import ProvenanceGraph from "./modules/ProvenanceGraph";
@@ -287,7 +287,7 @@ const App = observer((props) => {
                 {/* PROVENANCE GRAPH DRAWER
                 Drawer that slides in from the right side of the screen when the user presses the history button in the top panel [see Button key={"history"} above] */}
                 <Drawer anchor="right" open={provenanceGraphOpen} onClose={() =>  setProvenanceGraphOpen(false) } >
-                    <div style={ { width: "26vw", height: "100vh", padding: 8, overflow: "auto", boxSizing: "border-box" } } > { /* show scrollbars if content is bigger than box */}
+                    <div style={ { width: "40vw", height: "100vh", padding: 8, overflow: "auto", boxSizing: "border-box" } } > { /* show scrollbars if content is bigger than box */}
                         <Typography variant="h6">Provenance Graph</Typography>
                         <ProvenanceGraph open={provenanceGraphOpen} rootStore={props.rootStore} />
                     </div>
