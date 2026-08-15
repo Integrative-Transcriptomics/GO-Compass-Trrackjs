@@ -172,7 +172,7 @@ const App = observer((props) => {
                         
                         <div style={ {flexGrow: 1 }} />
                         {props.rootStore.provenance ?
-                            <Typography style={{ color: "white", whiteSpace: "nowrap", textAlign: "center" }}>
+                            <Typography style={{ color: "white", whiteSpace: "nowrap", textAlign: "center", padding: "4px 4px", border: "1px solid white", borderRadius: 4, }}>
                                 {props.rootStore.previousActionLabel ?  props.rootStore.previousActionLabel + " \u2192 "  : "SESSION START \u2192 " }
                                 <b><u>{props.rootStore.currentActionLabel}</u></b>
                                 {props.rootStore.nextActionLabel     ?  " \u2192 " + props.rootStore.nextActionLabel      :      " \u2192 END"      }
