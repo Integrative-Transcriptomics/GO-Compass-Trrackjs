@@ -21,7 +21,7 @@ import LinkIcon from "@material-ui/icons/Link";
 import {Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Link} from "@material-ui/core"
 
 // Additional icons for the side drawer and the provenance graph rendering component
-// import AccountTreeIcon from "@material-ui/icons/AccountTree";
+import AccountTreeIcon from "@material-ui/icons/AccountTree";
 import History from "@material-ui/icons/History";
 import {Drawer} from "@material-ui/core";
 import ProvenanceGraph from "./modules/ProvenanceGraph";
@@ -86,6 +86,7 @@ const App = observer((props) => {
             // Hotkey assignment
             const isUndo = (event.ctrlKey || event.metaKey) && !event.shiftKey && event.key.toLowerCase() === "z";
             const isRedo = (event.ctrlKey || event.metaKey) && (event.key.toLowerCase() === "y" || (event.shiftKey && event.key.toLowerCase() === "z"));
+            const isHistory = (event.key.toLowerCase() === "g");
 
             // Execute undo/redo logic depending on what button has been triggered
             if (isUndo) {
@@ -97,6 +98,14 @@ const App = observer((props) => {
                 event.preventDefault();
                 if (props.rootStore.provenance.current.children.length !== 0) {
                     props.rootStore.provenance.redo();
+                }
+            } else if (isHistory) {
+                event.preventDefault();
+                if (!props.rootStore.provenance.open) {
+                    setProvenanceGraphOpen(true);
+                }
+                else {
+                    setProvenanceGraphOpen(false);
                 }
             }
         };
@@ -170,6 +179,7 @@ const App = observer((props) => {
                         </div>
                         <div style={ {flexGrow: 1 }} />
                         
+                        {/* Mini provenance timeline found in the center of the title bar */}
                         <div style={ {flexGrow: 1 }} />
                         {props.rootStore.provenance ?
                             <Typography style={{ color: "white", whiteSpace: "nowrap", textAlign: "center", padding: "4px 4px", border: "1px solid white", borderRadius: 4, }}>
@@ -206,8 +216,8 @@ const App = observer((props) => {
                                     style={{ color: props.rootStore.provenance ? "white" : "rgba(255, 255, 255, 0.3)" }}
                                     onClick={() => setProvenanceGraphOpen(true)}>
                                     <span style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                                        <History style={{ color: props.rootStore.provenance ? "white" : "rgba(255, 255, 255, 0.3)" }} />
-                                        <span style={{ fontSize: "0.65rem" }}>History</span>
+                                        <AccountTreeIcon style={{ color: props.rootStore.provenance ? "white" : "rgba(255, 255, 255, 0.3)" }} />
+                                        <span style={{ fontSize: "0.65rem" }}><u>G</u>raph</span>
                                     </span>
                                 </Button>,
                             <FormControl className={classes.menuButton} key={"ont"}>
@@ -285,9 +295,9 @@ const App = observer((props) => {
                 </Dialog>
 
                 {/* PROVENANCE GRAPH DRAWER
-                Drawer that slides in from the right side of the screen when the user presses the history button in the top panel [see Button key={"history"} above] */}
+                Drawer that slides in from the right side of the screen when the user presses the graph (history) button in the top panel [see Button key={"history"} above] */}
                 <Drawer anchor="right" open={provenanceGraphOpen} onClose={() =>  setProvenanceGraphOpen(false) } >
-                    <div style={ { width: "40vw", height: "100vh", padding: 8, overflow: "auto", boxSizing: "border-box" } } > { /* show scrollbars if content is bigger than box */}
+                    <div style={ { width: "30vw", height: "100vh", padding: 8, overflow: "auto", boxSizing: "border-box" } } > { /* show scrollbars if content is bigger than box */}
                         <Typography variant="h6">Provenance Graph</Typography>
                         <ProvenanceGraph open={provenanceGraphOpen} rootStore={props.rootStore} />
                     </div>
