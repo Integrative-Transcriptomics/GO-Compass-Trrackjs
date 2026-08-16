@@ -27,7 +27,7 @@
     "react-refresh": "^0.12.0",
     "react-scripts": "3.4.1",
     "react-select": "^5.10.2",
-    "uuid": "latest"
+    "uuid": "^9.0.0"
   },
   "scripts": {
     "dev": "concurrently \"npm run server\" \"npm run start\"",
