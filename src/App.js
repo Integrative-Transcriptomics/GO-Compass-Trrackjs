@@ -22,7 +22,7 @@ import {Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Li
 
 // Additional icons for the side drawer and the provenance graph rendering component
 import AccountTreeIcon from "@material-ui/icons/AccountTree";
-import History from "@material-ui/icons/History";
+// import History from "@material-ui/icons/History";
 import {Drawer} from "@material-ui/core";
 import ProvenanceGraph from "./modules/ProvenanceGraph";
 
@@ -73,8 +73,7 @@ const App = observer((props) => {
     }, [appBar, props.rootStore.dataStores, props.rootStore.initialized, props.rootStore.ontology]);
 
     // Keyboard shortcut functionality ("hotkeys") 
-    // CTRL+Z (STRG+Z) to undo a provenance-enabled action 
-    // CTRL+Y (STRG+Y) to redo a provenance-enabled action
+    // CTRL+Z (STRG+Z) to undo a provenance-enabled action | CTRL+Y (STRG+Y) to redo a provenance-enabled action | G to open up provenance graph drawer
     useEffect(() => {
         const handleKeyDown = (event) => {
 
@@ -101,12 +100,9 @@ const App = observer((props) => {
                 }
             } else if (isHistory) {
                 event.preventDefault();
-                if (!props.rootStore.provenance.open) {
-                    setProvenanceGraphOpen(true);
-                }
-                else {
-                    setProvenanceGraphOpen(false);
-                }
+                setProvenanceGraphOpen((previousDrawerState) => {
+                    return !previousDrawerState
+                });
             }
         };
 
