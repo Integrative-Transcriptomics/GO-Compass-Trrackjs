@@ -76,7 +76,7 @@ export class RootStore {
                 this.sigThreshold = Number(pvalueFilter) <= 0.05 ? Number(pvalueFilter) : 0.05
                 
                 // TRRACK COMPONENT FOR MobX extendObservable START
-                // We addtionally need to keep the three values below stored as fields so we can perform a full data export/import later on
+                // Three extra MobX-observed fields, relevant for  export/import logic further down in this file
                 this.conditions = conditions;
                 this.results = results;
                 this.tableColumns = tableColumns;
@@ -122,7 +122,7 @@ export class RootStore {
             }),
 
             // Seed/populate per-ontology objects for all values that help us create Trrack's initial state
-            // Technically we do not need a separate function for initial seeding. This could be done right next to this.provenance = createGoCompassProvenance(...), but in my opinion, it does improve readability
+            // Technically we do not need a separate function for initial seeding. This could be done right next to this.provenance = createGoCompassProvenance(...), but in my opinion, it does improve code readability quite a bit
             seedStatesPerOntology: action(() => {
                 const initialFilterCutoff = {}, initialClusterCutoff = {}, initialConditionIndex = {}, initialOverviewListComparisonTab = {}, initialSelectionLocked = {}, 
                 initialSelectedConditions = {}, initialScaleLocked = {}, initialTableGlobalOpen = {}, initialTableSortKey = {}, initialTableSortDir = {};
@@ -209,21 +209,20 @@ export class RootStore {
             }),
 
             // Sync the state of the current provenance. Required for Trrack's URL sharing feature.
-            // TODO: Write better description
             syncStateFromProvenance: action((state) => {
                 this.ontology = state.ontology;
                 this.sigThreshold = state.sigThreshold;
                 this.restoreStatesPerOntology(state);
             }),
 
-            // Setter functionality (by Theresa) & tracking functionality (by Mathias) for ontology selection context menu
+            // Setter for ontology, provenance-enabled
             setOntology: action((ontology) => {
                 this.ontology = ontology;
                 if (this.provenance) {
                     this.provenance.apply(setOntologyAction(ontology), `Ont: ${ontology}`);
                 }
             }),
-            // Setter functionality (by Theresa) & tracking functionality (by Mathias) for threshold selection context menu
+            // Setter for significance threshold, provenance-enabled
             setSigThreshold: action((threshold) => {
                 this.sigThreshold = threshold;
                 if (this.provenance) {
@@ -251,21 +250,20 @@ export class RootStore {
             goBackToUpload: action(() => {
                 this.initialized = false;
                 this.provenance = null;
-                // If this GO-Compass session utilizes URL sharing, we need to strip the ?provState= parameter
+                // If createGoCompassProvenance utilizes URL sharing (loadFromUrl: true), we need to strip away the ?provState= parameter for a full reset.
                 window.history.replaceState({}, '', window.location.pathname);
             })
         });
         // TRRACK COMPONENT FOR MobX extendObservable END
     }
 
-    // Export session & provenance data to a JSON file so that it may later be imported using importProvenance()
+    // Store session values (=calculation results from the Python backend) & provenance graph inside a JSON file, then open download popup for user
     exportProvenance() {
         if (!this.provenance) {
             console.error("Provenance graph is not yet initialized.");
             return;
         }
 
-        // Create constant based on the values the Python backend has sent back to us after having performed its calculations on the input data
         const session = {
             sessionData: {
                 results: this.results,
@@ -278,7 +276,6 @@ export class RootStore {
                 pvalueFilter: this.pvalueFilter,
             },
 
-            // Turn Trrack's provenance graph into a field value of our session, then stringify it together with the backend data
             provenanceGraph: this.provenance.exportProvenanceGraph(),
         }
 

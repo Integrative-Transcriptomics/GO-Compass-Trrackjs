@@ -27,9 +27,9 @@ export class VisStore {
             conditionIndex: 0,
             stepsize: 10,
 
-            // Extra vis-values to be observed only for Trrack
+            // Extra MobX-observed fields for provenance tracking
             overviewListComparisonTab: 0,      // Overview List Comparison in bottom left quadrant starts in tab 0: "All GO-Terms"
-            scaleLocked: true,  // per default, "LOCK Y-SCALE" in bottom right quadrant starts locked
+            scaleLocked: true,                 // per default, "LOCK Y-SCALE" in bottom right quadrant starts locked ("true")
 
             /**
              * color Scale for terms
@@ -154,35 +154,35 @@ export class VisStore {
             }),
             unlock: action(() => {
                 // Only appy on provenance data if there was is a locked-in selection
-                // unlock() also fires on every tab switch even if nothing is selected
-                const hadSelection = (this.selectionLocked || this.selectedConditions.length > 0);
+                // unlock also triggers on every tab switch even if nothing is selected
+                const lockedOrSelected = (this.selectionLocked || this.selectedConditions.length > 0);
 
                 this.selectionLocked = false;
                 this.selectedConditions = [];
 
-                if (hadSelection && this.dataStore.rootStore.provenance) {
+                if (lockedOrSelected && this.dataStore.rootStore.provenance) {
                     this.dataStore.rootStore.provenance.apply(
-                        setLockedSelectionAction({ontology: this.dataStore.ontology, selectionLocked: false, selectedConditions: []}), `(${this.dataStore.ontology}) Clear selection`);
+                        setLockedSelectionAction({ontology: this.dataStore.ontology, selectionLocked: false, selectedConditions: []}), `OLC: Clear selection`);
                 }
             }),
             setLockedSelection: action((indices) => {
-                const newIndices=[...new Set(indices)];
+                const conditionIndicesWithoutDuplicates=[...new Set(indices)];
                 if(this.selectionLocked) {
-                    if (newIndices.toString() === this.selectedConditions.toString()) {
+                    if (conditionIndicesWithoutDuplicates.toString() === this.selectedConditions.toString()) {
                         this.selectionLocked = false;
                     } else {
-                        this.selectedConditions = newIndices;
+                        this.selectedConditions = conditionIndicesWithoutDuplicates;
                     }
                 } else {
                     this.selectionLocked = true;
-                    this.selectedConditions = newIndices;
+                    this.selectedConditions = conditionIndicesWithoutDuplicates;
                 }
                 // New case for provenance handling: If provenance data is present, apply setLockedSelectionAction to the provenance data as well
                 if (this.dataStore.rootStore.provenance) {
 
-                    const selectedConditionDescriptors = [];
+                    const selectedConditionNames = [];
                     this.selectedConditions.forEach(conditionIndex => {
-                        selectedConditionDescriptors.push(this.dataStore.conditions[conditionIndex]);
+                        selectedConditionNames.push(this.dataStore.conditions[conditionIndex]);
                     });
 
                     this.dataStore.rootStore.provenance.apply(
@@ -191,7 +191,7 @@ export class VisStore {
                             selectionLocked: this.selectionLocked,
                             selectedConditions: this.selectedConditions
                         }),
-                        `${this.selectionLocked ? "Lock" : "Unlock"} ${selectedConditionDescriptors.join(", ")}`);
+                        `${this.selectionLocked ? "Lock" : "Unlock"} ${selectedConditionNames.join(", ")}`);
                 }
             }),
             selectConditions: action((indices) => {
@@ -200,7 +200,6 @@ export class VisStore {
                 }
             }),
             // Provenance-enabled Overview List Comparison Tab display for when the user clicks the ALL GO-Terms / Significant GO-Terms tab in Overview List Comparison (bottom left quadrant)
-            // TODO: Improve explanation
             setOverviewListComparisonTab: action((tab) => {
                 // Update MobX observed/observable overviewListComparisonTab field in VisStore instance
                 this.overviewListComparisonTab = tab;
@@ -213,7 +212,6 @@ export class VisStore {
                 }
             }),
             // Provenance-enabled (UN)LOCK Y-SCALE for when the user clicks sole button in Detailed Comparison (bottom right quadrant)
-            // TODO: Improve explanation
             setScaleLocked: action((locked) => {
                 // Update MobX observed/observable locked field in VisStore instance
                 this.scaleLocked = locked;

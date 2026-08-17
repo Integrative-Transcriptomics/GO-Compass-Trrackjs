@@ -85,7 +85,9 @@ const App = observer((props) => {
             // Hotkey assignment
             const isUndo = (event.ctrlKey || event.metaKey) && !event.shiftKey && event.key.toLowerCase() === "z";
             const isRedo = (event.ctrlKey || event.metaKey) && (event.key.toLowerCase() === "y" || (event.shiftKey && event.key.toLowerCase() === "z"));
-            const isHistory = (event.key.toLowerCase() === "g");
+
+            // internally the button is called History, but the key "H" is reserved in many browsers. So G for Graph is the alternate and equally mnemonic choice
+            const isHistory = (event.key.toLowerCase() === "g"); 
 
             // Execute undo/redo logic depending on what button has been triggered
             if (isUndo) {
@@ -106,7 +108,7 @@ const App = observer((props) => {
             }
         };
 
-        // Global keydown listener for the entire GO-Compass window
+        // Global keydown listener for the entire GO-Compass window (incl. drawer with provenance graph)
         window.addEventListener("keydown", handleKeyDown);
         // Remove old listener before attaching new one when the effect is re-run
         return () => window.removeEventListener("keydown", handleKeyDown);
