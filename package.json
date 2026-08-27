@@ -37,7 +37,8 @@
     "start": "cross-env NODE_OPTIONS=--openssl-legacy-provider react-scripts start -FAST_REFRESH=true",
     "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "postinstall": "patch-package"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -57,6 +58,7 @@
   "devDependencies": {
     "concurrently": "^5.2.0",
     "cross-env": "^10.1.0",
+    "patch-package": "^8.0.1",
     "run-script-os": "^1.1.6"
   }
 }
