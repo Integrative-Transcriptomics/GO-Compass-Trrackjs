@@ -74,7 +74,7 @@ export class TableStore {
                             ontology: this.dataStore.ontology,
                             globalOpen: this.globalOpen
                         }),
-                        `Set globalOpen to ${this.globalOpen} (${this.dataStore.ontology})`);
+                        `Term table: ${this.globalOpen}`);
                 }
             }),
             toggleOpen: action((goTerm) => {
@@ -118,7 +118,7 @@ export class TableStore {
                             sortKey: key,
                             sortDir: dir
                         }),
-                        `sortKey: ${key}, sortDir: ${dir}`);
+                        `Column: ${key}, sort ${dir}`);
                 }
             }),
 

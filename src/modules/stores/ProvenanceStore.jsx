@@ -104,7 +104,8 @@ export const setTableSortAction = createAction((state, {ontology, sortKey, sortD
     state.sortDir[ontology] = sortDir;
 }).setLabel("Set Table Sorting Mode");
 
-// Provenance action for expand/collapse all button in the bottom table
+// Provenance action for expand/collapse all button in the bottom table. 
+// The expansion/collapse of each individual GO-Term is controlled by termState. This value is not stored in provenance as it would cause "node-spam"
 export const setTableGlobalOpenAction = createAction((state, {ontology, globalOpen}) => {
     state.globalOpen[ontology] = globalOpen;
 }).setLabel("Set Table Expand/Collapse Status");

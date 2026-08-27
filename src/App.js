@@ -66,6 +66,19 @@ const App = observer((props) => {
     // Is the Provenance Graph currently being displayed to the user? Default: false
     const [provenanceGraphOpen, setProvenanceGraphOpen] = useState(false);
 
+    // Pattern to identify decimal numbers with
+    const decimalPattern = /\d+\.\d+/g;
+
+    // Replace labels that use lengthy decimal values, e.g. "Filter: 0.423352352342" with labels with truncated decimal values
+    const shortenActionLabel = (label) => {
+        if (!label) {
+            return label;
+        } else {
+            return label.replace(decimalPattern, (rawNumber) => parseFloat(rawNumber).toFixed(2));
+        }
+    };
+
+
     useEffect(() => {
         if (appBar.current != null && props.rootStore.initialized) {
             props.rootStore.dataStores[props.rootStore.ontology].visStore.setPlotHeight(window.innerHeight - appBar.current.getBoundingClientRect().height);
@@ -76,6 +89,13 @@ const App = observer((props) => {
     // CTRL+Z (STRG+Z) to undo a provenance-enabled action | CTRL+Y (STRG+Y) to redo a provenance-enabled action | G to open up provenance graph drawer
     useEffect(() => {
         const handleKeyDown = (event) => {
+
+            const targetInFocus = event.target.tagName;
+
+            // If the provenane graph's annotation textarea is opened, keyboard shortcuts need to be disabled. Otherwise G would immediately close the sidebar and so on
+            if (event.target.isContentEditable || targetInFocus === "TEXTAREA" || targetInFocus === "INPUT" ) {
+                return;
+            }
 
             // No provenance? No undo/redo hotkeys!
             if (!props.rootStore.provenance) {
@@ -181,9 +201,9 @@ const App = observer((props) => {
                         <div style={ {flexGrow: 1 }} />
                         {props.rootStore.provenance ?
                             <Typography style={{ color: "white", whiteSpace: "nowrap", textAlign: "center", padding: "4px 4px", border: "1px solid white", borderRadius: 4, }}>
-                                {props.rootStore.previousActionLabel ?  props.rootStore.previousActionLabel + " \u2192 "  : "SESSION START \u2192 " }
-                                <b><u>{props.rootStore.currentActionLabel}</u></b>
-                                {props.rootStore.nextActionLabel     ?  " \u2192 " + props.rootStore.nextActionLabel      :      " \u2192 END"      }
+                                {props.rootStore.previousActionLabel ?  shortenActionLabel(props.rootStore.previousActionLabel) + " \u2192 "  : "SESSION START \u2192 " }
+                                <b><u>{shortenActionLabel(props.rootStore.currentActionLabel)}</u></b>
+                                {props.rootStore.nextActionLabel     ?  " \u2192 " + shortenActionLabel(props.rootStore.nextActionLabel)      :      " \u2192 END"      }
                             </Typography> : null}
                         <div style={ {flexGrow: 1 }} />
                         
