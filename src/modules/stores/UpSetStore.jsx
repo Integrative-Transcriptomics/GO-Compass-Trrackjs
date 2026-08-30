@@ -84,7 +84,8 @@ export class UpSetStore {
                     return (combinations.filter((d, i) => !filterIndices.includes(i)))
                 },
                 /**
-                 * Fix for UpSet.jsx's local (non-MobX) highlighted state not staying in sync when Trrack's undo/redo restores selectionLocked/selectedConditions from provenance.
+                 * Fix for UpSet.jsx's local (non-MobX) highlighted state not staying in sync when Trrack's undo/redo restores selectionLocked/selectedConditions from 
+                 * provenance.
                  * This MobX-observed getter gets called automatically on change. The previous approach relied on a manual setter call that wasn't always applied. 
                  * properly when restoring data. There may be more elegant solutions than this, but it ultimately works.
                  * Practical effect: The vertical bars inside our Upset plot now get proper yellow highlighting when the user presses redo.

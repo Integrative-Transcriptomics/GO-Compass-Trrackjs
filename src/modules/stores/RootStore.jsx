@@ -95,14 +95,14 @@ export class RootStore {
                 *   overviewListComparisonTab:              Ontology-dependent value that records whether the "All GO-Terms" or "Significant GO-Terms"
                 *                                           tab is currently selected in the Overview List Comparison panel (bottom left quadrant)
                 * 
-                *   selectionLocked and selectedConditions: Ontology-dependent values that record whetehr a set/intersection selection is currently locked in the
+                *   selectionLocked and selectedConditions: Ontology-dependent values that record whether a set/intersection selection is currently locked in the
                 *                                           UpSet plot and which conditions it contains (Significant GO-Terms tab, bottom left quadrant)
                 *
-                *   scaleLocked:                            Ontology-dependent value that ... TODO
+                *   scaleLocked:                            Ontology-dependent value that records whether the Y-Axis of the faceted bar chart in the bottom-right is locked
                 * 
-                *   setTableSortAction                      TODO
+                *   initialTableSortKey, initialTableSortDir  Ontology-dependent values that record which column of the bottom table is being sorted and if its *                                             ascending or descending
                 * 
-                *   setTableGlobalOpenAction                TODO
+                *   setTableGlobalOpenAction                 Ontology-dependent value that records whether table at the bottom is expanded or collapsed
                 */
                 this.provenance = createGoCompassProvenance(this.ontology, this.sigThreshold, this.seedStatesPerOntology());
                 // Replay into RootStore only on undo/redo. NOTE: Don't use it on apply()
