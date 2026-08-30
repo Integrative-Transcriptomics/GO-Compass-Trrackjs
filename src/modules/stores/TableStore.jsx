@@ -118,7 +118,7 @@ export class TableStore {
                             sortKey: key,
                             sortDir: dir
                         }),
-                        `Column: ${key}, sort ${dir}`);
+                        `Col: ${key}, ${dir} sort`);
                 }
             }),
 
